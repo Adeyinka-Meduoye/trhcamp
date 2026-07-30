@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion } from 'motion/react';
 import { COMMITTEES } from '../data/campData';
 import { Attendee } from '../types';
 import {
@@ -138,7 +139,12 @@ export const GuidelinesView: React.FC<GuidelinesViewProps> = ({ attendees = [] }
   return (
     <div className="max-w-5xl mx-auto space-y-8 pb-12">
       {/* Top Title Banner */}
-      <div className="bg-[#251464] text-[#F8FAFC] rounded-3xl p-6 sm:p-8 border border-[#FF8A00]/30 shadow-xl space-y-4">
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        className="bg-[#251464] text-[#F8FAFC] rounded-3xl p-6 sm:p-8 border border-[#FF8A00]/30 shadow-xl space-y-4"
+      >
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <BookOpen className="w-5 h-5 text-[#FF8A00]" />
@@ -179,11 +185,16 @@ export const GuidelinesView: React.FC<GuidelinesViewProps> = ({ attendees = [] }
             </button>
           ))}
         </div>
-      </div>
+      </motion.div>
 
       {/* TAB 1: GENERAL GUIDELINES */}
       {activeTab === 'rules' && (
-        <div className="space-y-4 animate-fadeIn">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="space-y-4"
+        >
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-bold text-[#F8FAFC] flex items-center gap-2">
               <ShieldCheck className="w-5 h-5 text-[#FF8A00]" />
@@ -198,8 +209,12 @@ export const GuidelinesView: React.FC<GuidelinesViewProps> = ({ attendees = [] }
               const isOpen = openRuleIndex === idx;
 
               return (
-                <div
+                <motion.div
                   key={rule.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: '-20px' }}
+                  transition={{ duration: 0.4, delay: idx * 0.04, ease: [0.22, 1, 0.36, 1] }}
                   className={`bg-[#1E293B] rounded-2xl border transition-all ${
                     isOpen ? 'border-[#FF8A00] shadow-md' : 'border-[#334155] shadow-sm'
                   }`}
@@ -244,16 +259,21 @@ export const GuidelinesView: React.FC<GuidelinesViewProps> = ({ attendees = [] }
                       </ul>
                     </div>
                   )}
-                </div>
+                </motion.div>
               );
             })}
           </div>
-        </div>
+        </motion.div>
       )}
 
       {/* TAB 2: COMMITTEE PROCEDURES */}
       {activeTab === 'committees' && (
-        <div className="space-y-6 animate-fadeIn">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="space-y-6"
+        >
           <div className="border-b border-[#334155] pb-3">
             <h3 className="text-lg font-bold text-[#F8FAFC] flex items-center gap-2">
               <Users className="w-5 h-5 text-[#FF8A00]" />
@@ -298,12 +318,17 @@ export const GuidelinesView: React.FC<GuidelinesViewProps> = ({ attendees = [] }
               );
             })}
           </div>
-        </div>
+        </motion.div>
       )}
 
       {/* TAB 3: DISCIPLINARY PROCEDURE */}
       {activeTab === 'disciplinary' && (
-        <div className="bg-[#1E293B] rounded-3xl p-6 sm:p-8 border border-[#334155] shadow-sm space-y-6 animate-fadeIn">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="bg-[#1E293B] rounded-3xl p-6 sm:p-8 border border-[#334155] shadow-sm space-y-6"
+        >
           <div className="border-b border-[#334155] pb-4">
             <h3 className="text-xl font-bold text-[#F8FAFC] flex items-center gap-2">
               <AlertTriangle className="w-5 h-5 text-[#FF8A00]" />
@@ -349,12 +374,17 @@ export const GuidelinesView: React.FC<GuidelinesViewProps> = ({ attendees = [] }
               "All disciplinary measures shall be administered with fairness, wisdom, and the ultimate objective of spiritual restoration."
             </p>
           </div>
-        </div>
+        </motion.div>
       )}
 
       {/* TAB 4: LEGACY & LONG TERM VISION */}
       {activeTab === 'legacy' && (
-        <div className="bg-gradient-to-br from-[#251464] via-[#0F172A] to-[#251464] text-[#F8FAFC] rounded-3xl p-6 sm:p-10 border border-[#FF8A00]/40 shadow-xl space-y-6 animate-fadeIn">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="bg-gradient-to-br from-[#251464] via-[#0F172A] to-[#251464] text-[#F8FAFC] rounded-3xl p-6 sm:p-10 border border-[#FF8A00]/40 shadow-xl space-y-6"
+        >
           <div className="flex items-center gap-2 text-[#FF8A00] font-mono text-xs uppercase tracking-widest font-semibold">
             <Award className="w-4 h-4 text-[#FF8A00]" />
             <span>TRH Ministries Global — Legacy Vision</span>
@@ -380,7 +410,7 @@ export const GuidelinesView: React.FC<GuidelinesViewProps> = ({ attendees = [] }
               <p>Integrating visitors into the church family and equipping believers for effective local and global ministry.</p>
             </div>
           </div>
-        </div>
+        </motion.div>
       )}
     </div>
   );

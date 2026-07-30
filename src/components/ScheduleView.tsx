@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion } from 'motion/react';
 import { DAILY_SCHEDULE, CAMP_DETAILS } from '../data/campData';
 import { ScheduleItem } from '../types';
 import {
@@ -75,7 +76,12 @@ export const ScheduleView: React.FC = () => {
   return (
     <div className="max-w-5xl mx-auto space-y-8 pb-12">
       {/* Top Banner */}
-      <div className="bg-[#251464] text-[#F8FAFC] rounded-3xl p-6 sm:p-8 border border-[#FF8A00]/30 shadow-xl space-y-4">
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        className="bg-[#251464] text-[#F8FAFC] rounded-3xl p-6 sm:p-8 border border-[#FF8A00]/30 shadow-xl space-y-4"
+      >
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <Clock className="w-5 h-5 text-[#FF8A00]" />
@@ -120,7 +126,7 @@ export const ScheduleView: React.FC = () => {
             <span>{notificationsEnabled ? 'Reminders On' : 'Enable Reminders'}</span>
           </button>
         </div>
-      </div>
+      </motion.div>
 
       {/* Filter Tabs */}
       <div className="flex flex-wrap items-center justify-between gap-2 bg-[#1E293B] p-2 rounded-2xl border border-[#334155] shadow-sm">
@@ -169,12 +175,16 @@ export const ScheduleView: React.FC = () => {
             <p className="text-xs text-[#94A3B8]">Switch filter to view all daily camp activities.</p>
           </div>
         ) : (
-          filteredSchedule.map((item) => {
+          filteredSchedule.map((item, idx) => {
             const isBookmarked = bookmarkedIds.includes(item.id);
 
             return (
-              <div
+              <motion.div
                 key={item.id}
+                initial={{ opacity: 0, y: 25 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-20px' }}
+                transition={{ duration: 0.45, delay: idx * 0.05, ease: [0.22, 1, 0.36, 1] }}
                 className={`group bg-[#1E293B] rounded-2xl p-5 border transition-all shadow-sm hover:shadow-md ${
                   item.highlight
                     ? 'border-[#FF8A00]/80 ring-2 ring-[#FF8A00]/20 bg-gradient-to-r from-[#251464]/40 via-[#1E293B] to-[#1E293B]'
@@ -226,7 +236,7 @@ export const ScheduleView: React.FC = () => {
                     <span>{isBookmarked ? 'Saved' : 'Save'}</span>
                   </button>
                 </div>
-              </div>
+              </motion.div>
             );
           })
         )}

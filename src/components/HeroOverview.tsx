@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion } from 'motion/react';
 import { CAMP_DETAILS } from '../data/campData';
 import heroBgImg from '../assets/images/victory_camp_hero_bg_1785340181891.jpg';
 import {
@@ -118,7 +119,12 @@ export const HeroOverview: React.FC<HeroOverviewProps> = ({
   return (
     <div className="space-y-10 pb-12">
       {/* Main Hero Section - Open, Borderless, Centralized with Background Image */}
-      <div className="relative overflow-hidden rounded-3xl bg-[#0F172A] p-6 sm:p-12 text-center flex flex-col items-center justify-center space-y-8 border border-[#FF8A00]/40 shadow-2xl">
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        className="relative overflow-hidden rounded-3xl bg-[#0F172A] p-6 sm:p-12 text-center flex flex-col items-center justify-center space-y-8 border border-[#FF8A00]/40 shadow-2xl"
+      >
         {/* Background Image Layer */}
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-opacity mix-blend-overlay opacity-35 pointer-events-none scale-105 transform"
@@ -216,10 +222,16 @@ export const HeroOverview: React.FC<HeroOverviewProps> = ({
             </button>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Highlights Grid */}
-      <div className="space-y-4">
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: '-40px' }}
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        className="space-y-4"
+      >
         <div className="flex items-center justify-between">
           <h2 className="text-xl sm:text-2xl font-bold text-[#F8FAFC] tracking-tight">
             Camp Highlights & Experience
@@ -233,9 +245,13 @@ export const HeroOverview: React.FC<HeroOverviewProps> = ({
           {highlights.map((item, idx) => {
             const Icon = item.icon;
             return (
-              <div
+              <motion.div
                 key={idx}
-                className="bg-[#1E293B] rounded-2xl p-5 border border-[#334155] shadow-sm hover:shadow-md transition-shadow space-y-3"
+                initial={{ opacity: 0, y: 25 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: idx * 0.1, ease: [0.22, 1, 0.36, 1] }}
+                className="bg-[#1E293B] rounded-2xl p-5 border border-[#334155] shadow-sm hover:shadow-md hover:border-[#FF8A00]/40 transition-all space-y-3"
               >
                 <div
                   className={`w-10 h-10 rounded-xl bg-gradient-to-br from-[#FF8A00] to-[#E85B00] flex items-center justify-center text-[#0F172A] font-bold shadow-md`}
@@ -249,14 +265,20 @@ export const HeroOverview: React.FC<HeroOverviewProps> = ({
                   <h3 className="font-bold text-[#F8FAFC] text-base mt-2">{item.title}</h3>
                   <p className="text-xs text-[#94A3B8] leading-relaxed mt-1">{item.desc}</p>
                 </div>
-              </div>
+              </motion.div>
             );
           })}
         </div>
-      </div>
+      </motion.div>
 
       {/* Two Column: Executive Summary / Vision & Bank Payment Card */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: '-40px' }}
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        className="grid grid-cols-1 lg:grid-cols-3 gap-8"
+      >
         {/* Left 2 Columns: Vision & Objectives */}
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-[#1E293B] rounded-3xl p-6 sm:p-8 border border-[#334155] shadow-sm space-y-6">
@@ -396,7 +418,7 @@ export const HeroOverview: React.FC<HeroOverviewProps> = ({
             </ul>
           </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };

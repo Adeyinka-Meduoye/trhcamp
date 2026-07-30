@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion } from 'motion/react';
 import { Attendee, CommitteeName, Gender, PaymentStatus, ExpectationPost } from '../types';
 import { CAMP_DETAILS, isRegistrationClosed, REGISTRATION_CLOSURE_DATE } from '../data/campData';
 import { saveAttendeeToFirestore, saveExpectationToFirestore } from '../lib/firebase';
@@ -180,10 +181,8 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
         return false;
       }
     } else if (currentSection === 7) {
-      if (!expectations.trim()) {
-        setFormError('Please share what you are trusting God for during this camp.');
-        return false;
-      }
+      // Expectations is now optional - participants can share anonymously or skip
+      return true;
     } else if (currentSection === 8) {
       const allChecked = Object.values(commitments).every(Boolean);
       if (!allChecked || !declarationSigned || !signatureName.trim()) {
@@ -285,11 +284,23 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
 
       // 3. Automatically send Digital Pass to attendee email via Gmail SMTP
       if (email.trim()) {
-        fetch('/api/send-pass', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ attendee: newAttendee }),
-        }).catch((err) => console.error('Auto send email error:', err));
+        try {
+          const emailRes = await fetch('/api/send-pass', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ attendee: newAttendee }),
+          });
+          const emailData = await emailRes.json();
+          if (emailData.simulated) {
+            console.info('[Email Notice]', emailData.message);
+          } else if (emailData.success) {
+            console.log('[Email Dispatched]', emailData.message);
+          } else {
+            console.error('[Email Dispatch Error]', emailData.error);
+          }
+        } catch (err) {
+          console.error('Auto send email error:', err);
+        }
       }
     } catch (err) {
       console.error('Error persisting attendee to Firestore:', err);
@@ -1084,7 +1095,8 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
             <div className="space-y-4">
               <div className="space-y-2">
                 <label className="text-xs font-bold text-[#94A3B8] uppercase tracking-wider block">
-                  What are you trusting God for during this camp? <span className="text-[#E85B00]">*</span>
+                  What are you trusting God for during this camp?{' '}
+                  <span className="text-[#FF8A00] font-normal lowercase">(Optional — share anonymously if you prefer)</span>
                 </label>
                 <p className="text-xs text-[#94A3B8]">
                   Share your specific spiritual prayer desires, healing requests, breakthrough targets, or personal expectations for this 7-day consecration.
@@ -1093,9 +1105,8 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
                   value={expectations}
                   onChange={(e) => setExpectations(e.target.value)}
                   rows={5}
-                  placeholder="e.g. Trusting God for fresh spiritual fire on my prayer altar, clarity for my ministry calling, and divine evidence of victory in 1 Cor 15:57..."
+                  placeholder="e.g. Trusting God for fresh spiritual fire on my prayer altar, clarity for my ministry calling, and divine evidence of victory in 1 Cor 15:57... (Optional)"
                   className="w-full px-4 py-3 rounded-2xl bg-[#334155] border border-[#334155] focus:border-[#FF8A00] text-[#F8FAFC] placeholder-[#94A3B8] text-sm leading-relaxed"
-                  required
                 />
               </div>
             </div>

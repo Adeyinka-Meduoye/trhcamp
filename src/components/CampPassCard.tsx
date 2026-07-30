@@ -1,4 +1,5 @@
 import React, { useRef, useState } from 'react';
+import { motion } from 'motion/react';
 import { Attendee } from '../types';
 import { CAMP_DETAILS, DEFAULT_CAMP_LOGO } from '../data/campData';
 import { toPng } from 'html-to-image';
@@ -36,7 +37,7 @@ export const CampPassCard: React.FC<CampPassCardProps> = ({
   const passRef = useRef<HTMLDivElement>(null);
   const [isDownloading, setIsDownloading] = useState(false);
   const [isSendingEmail, setIsSendingEmail] = useState(false);
-  const [emailStatus, setEmailStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [emailStatus, setEmailStatus] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
 
   const handlePrint = () => {
     window.print();
@@ -74,10 +75,17 @@ export const CampPassCard: React.FC<CampPassCardProps> = ({
 
       const data = await res.json();
       if (data.success) {
-        setEmailStatus({
-          type: 'success',
-          message: data.message || `Digital Pass successfully sent to ${attendee.email}`,
-        });
+        if (data.simulated) {
+          setEmailStatus({
+            type: 'info',
+            message: data.message || `Pass generated. To enable real email inbox delivery to ${attendee.email}, set GMAIL_USER and GMAIL_APP_PASSWORD in environment variables.`,
+          });
+        } else {
+          setEmailStatus({
+            type: 'success',
+            message: data.message || `Digital Pass successfully sent to ${attendee.email}`,
+          });
+        }
       } else {
         setEmailStatus({
           type: 'error',
@@ -112,7 +120,12 @@ export const CampPassCard: React.FC<CampPassCardProps> = ({
   };
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6 pb-12">
+    <motion.div
+      initial={{ opacity: 0, y: 30, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+      className="max-w-3xl mx-auto space-y-6 pb-12"
+    >
       {/* Top action toolbar */}
       <div className="flex flex-wrap items-center justify-between gap-3 bg-[#1E293B] p-4 rounded-2xl border border-[#334155] shadow-sm print:hidden">
         <div className="flex items-center gap-2">
@@ -165,11 +178,15 @@ export const CampPassCard: React.FC<CampPassCardProps> = ({
           className={`p-3.5 rounded-2xl text-xs sm:text-sm flex items-center gap-2 border font-semibold ${
             emailStatus.type === 'success'
               ? 'bg-emerald-950/80 border-emerald-500/50 text-emerald-300'
+              : emailStatus.type === 'info'
+              ? 'bg-amber-950/80 border-amber-500/50 text-amber-300'
               : 'bg-red-950/80 border-red-500/50 text-red-300'
           }`}
         >
           {emailStatus.type === 'success' ? (
             <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+          ) : emailStatus.type === 'info' ? (
+            <Mail className="w-4 h-4 text-amber-400 shrink-0" />
           ) : (
             <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
           )}
@@ -315,7 +332,7 @@ export const CampPassCard: React.FC<CampPassCardProps> = ({
               SCAN TO VERIFY PASS
             </span>
             <p className="text-[11px] text-[#94A3B8] leading-tight">
-              Scan with phone camera or present to TRH Protocol desk at arrival for instant pass verification.
+              Scan with phone camera or present to TRH Information desk at arrival for instant pass verification.
             </p>
           </div>
         </div>
@@ -358,6 +375,6 @@ export const CampPassCard: React.FC<CampPassCardProps> = ({
           </div>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 };

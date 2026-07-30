@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion } from 'motion/react';
 import { Attendee, CommitteeName, PaymentStatus } from '../types';
 import { CAMP_DETAILS } from '../data/campData';
 import {
@@ -203,7 +204,12 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   if (!authenticatedRole) {
     return (
       <div className="max-w-md mx-auto space-y-6 pb-12 pt-4">
-        <div className="bg-[#1E293B] rounded-3xl p-6 sm:p-8 border-2 border-[#FF8A00]/40 shadow-2xl space-y-6 text-[#F8FAFC]">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+          className="bg-[#1E293B] rounded-3xl p-6 sm:p-8 border-2 border-[#FF8A00]/40 shadow-2xl space-y-6 text-[#F8FAFC]"
+        >
           <div className="text-center space-y-2">
             <div className="w-14 h-14 rounded-2xl bg-[#251464] border border-[#FF8A00]/40 flex items-center justify-center mx-auto text-[#FF8A00] shadow-lg">
               <Lock className="w-7 h-7" />
@@ -294,7 +300,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
               Authorized Official Passwords are provided strictly to designated TRH officers.
             </p>
           </div>
-        </div>
+        </motion.div>
       </div>
     );
   }

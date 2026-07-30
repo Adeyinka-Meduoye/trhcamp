@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion } from 'motion/react';
 import { ExpectationPost } from '../types';
 import { CAMP_DETAILS } from '../data/campData';
 import {
@@ -89,7 +90,12 @@ export const ExpectationWall: React.FC = () => {
   return (
     <div className="max-w-5xl mx-auto space-y-8 pb-12">
       {/* Top Title Banner */}
-      <div className="bg-[#251464] text-[#F8FAFC] rounded-3xl p-6 sm:p-8 border border-[#FF8A00]/30 shadow-xl space-y-4">
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        className="bg-[#251464] text-[#F8FAFC] rounded-3xl p-6 sm:p-8 border border-[#FF8A00]/30 shadow-xl space-y-4"
+      >
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <Flame className="w-5 h-5 text-[#FF8A00]" />
@@ -122,7 +128,7 @@ export const ExpectationWall: React.FC = () => {
             {posts.length} Faith Requests Posted
           </span>
         </div>
-      </div>
+      </motion.div>
 
       {/* Post Submission Card */}
       {showForm && (
@@ -222,10 +228,14 @@ export const ExpectationWall: React.FC = () => {
 
       {/* Expectation Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {filteredPosts.map((post) => (
-          <div
+        {filteredPosts.map((post, idx) => (
+          <motion.div
             key={post.id}
-            className="bg-[#1E293B] rounded-2xl p-5 border border-[#334155] shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-4"
+            initial={{ opacity: 0, y: 25 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-20px' }}
+            transition={{ duration: 0.45, delay: idx * 0.05, ease: [0.22, 1, 0.36, 1] }}
+            className="bg-[#1E293B] rounded-2xl p-5 border border-[#334155] shadow-sm hover:shadow-md hover:border-[#FF8A00]/40 transition-all flex flex-col justify-between space-y-4"
           >
             <div className="space-y-3">
               <div className="flex items-center justify-between">
@@ -257,7 +267,7 @@ export const ExpectationWall: React.FC = () => {
                 </span>
               </button>
             </div>
-          </div>
+          </motion.div>
         ))}
       </div>
     </div>

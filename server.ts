@@ -3,6 +3,9 @@ import path from 'path';
 import fs from 'fs';
 import { createServer as createViteServer } from 'vite';
 import nodemailer from 'nodemailer';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const app = express();
 const PORT = 3000;
@@ -58,8 +61,12 @@ app.post('/api/send-pass', async (req, res) => {
     return res.status(400).json({ success: false, error: 'Attendee data and email address are required.' });
   }
 
-  const gmailUser = process.env.GMAIL_USER || 'trhministriesglobal@gmail.com';
-  const gmailPass = process.env.GMAIL_APP_PASSWORD;
+  const rawGmailUser = process.env.GMAIL_USER || 'trhministriesglobal@gmail.com';
+  const rawGmailPass = process.env.GMAIL_APP_PASSWORD;
+
+  const gmailUser = rawGmailUser ? rawGmailUser.trim() : '';
+  const gmailPass = rawGmailPass ? rawGmailPass.replace(/\s+/g, '') : '';
+  const isPassConfigured = gmailPass && gmailPass !== 'your_gmail_app_password';
 
   const logoPngPath = path.join(process.cwd(), 'src/assets/images/trh_camp_logo_1785335253249.png');
   const logoJpgPath = path.join(process.cwd(), 'src/assets/images/trh_camp_logo_1785335253249.jpg');
@@ -141,13 +148,18 @@ app.post('/api/send-pass', async (req, res) => {
     });
   }
 
-  if (gmailUser && gmailPass) {
+  if (gmailUser && isPassConfigured) {
     try {
       const transporter = nodemailer.createTransport({
-        service: 'gmail',
+        host: 'smtp.gmail.com',
+        port: 465,
+        secure: true,
         auth: {
           user: gmailUser,
           pass: gmailPass,
+        },
+        tls: {
+          rejectUnauthorized: false,
         },
       });
 
