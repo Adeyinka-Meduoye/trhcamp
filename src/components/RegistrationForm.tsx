@@ -290,13 +290,19 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ attendee: newAttendee }),
           });
-          const emailData = await emailRes.json();
-          if (emailData.simulated) {
-            console.info('[Email Notice]', emailData.message);
-          } else if (emailData.success) {
-            console.log('[Email Dispatched]', emailData.message);
+          const contentType = emailRes.headers.get('content-type') || '';
+          if (contentType.includes('application/json')) {
+            const emailData = await emailRes.json();
+            if (emailData.simulated) {
+              console.info('[Email Notice]', emailData.message);
+            } else if (emailData.success) {
+              console.log('[Email Dispatched]', emailData.message);
+            } else {
+              console.error('[Email Dispatch Error]', emailData.error);
+            }
           } else {
-            console.error('[Email Dispatch Error]', emailData.error);
+            const textErr = await emailRes.text();
+            console.error('[Email Server Error]', emailRes.status, textErr.slice(0, 150));
           }
         } catch (err) {
           console.error('Auto send email error:', err);

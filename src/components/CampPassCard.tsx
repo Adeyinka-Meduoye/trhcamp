@@ -73,8 +73,16 @@ export const CampPassCard: React.FC<CampPassCardProps> = ({
         body: JSON.stringify({ attendee, passImageBase64: dataUrl }),
       });
 
-      const data = await res.json();
-      if (data.success) {
+      let data: any = {};
+      const contentType = res.headers.get('content-type') || '';
+      if (contentType.includes('application/json')) {
+        data = await res.json();
+      } else {
+        const textData = await res.text();
+        throw new Error(`Server returned error status (${res.status}): ${textData.slice(0, 120)}`);
+      }
+
+      if (res.ok && data.success) {
         if (data.simulated) {
           setEmailStatus({
             type: 'info',
