@@ -1,0 +1,6 @@
+{
+  "name": "TRH Victory Camp 2026 Portal",
+  "description": "Official retreat portal for TRH Ministries Global Annual Victory Camp: registration, schedule, guidelines, expectations wall, committee volunteer system, and camp administration.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
