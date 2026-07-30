@@ -121,29 +121,13 @@ export const Header: React.FC<HeaderProps> = ({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
         {/* Logo & Title */}
         <div className="flex items-center gap-3">
-          <div className="relative group/logo">
-            <img
-              src={logoSrc}
-              alt="TRH Camp Logo"
-              onClick={() => setActiveTab('overview')}
-              className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl object-cover shadow-lg shadow-[#FF8A00]/20 group-hover/logo:scale-105 transition-transform border border-[#FF8A00]/50 cursor-pointer bg-[#0F172A]"
-              referrerPolicy="no-referrer"
-            />
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              title="Change logo from local computer"
-              className="absolute -bottom-1 -right-1 p-1 bg-[#FF8A00] text-[#0F172A] rounded-full shadow hover:scale-110 transition-transform cursor-pointer"
-            >
-              <Upload className="w-2.5 h-2.5 stroke-[2.5]" />
-            </button>
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleLogoUpload}
-              accept="image/*"
-              className="hidden"
-            />
-          </div>
+          <img
+            src={DEFAULT_CAMP_LOGO}
+            alt="TRH Camp Logo"
+            onClick={() => setActiveTab('overview')}
+            className="h-10 sm:h-12 w-auto object-contain cursor-pointer transition-transform hover:scale-105"
+            referrerPolicy="no-referrer"
+          />
 
           <div
             onClick={() => setActiveTab('overview')}

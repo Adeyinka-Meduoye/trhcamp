@@ -221,9 +221,8 @@ export const HeroOverview: React.FC<HeroOverviewProps> = ({
       {/* Highlights Grid */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl sm:text-2xl font-bold text-[#F8FAFC] tracking-tight flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-[#FF8A00]" />
-            <span>Camp Highlights & Experience</span>
+          <h2 className="text-xl sm:text-2xl font-bold text-[#F8FAFC] tracking-tight">
+            Camp Highlights & Experience
           </h2>
           <span className="text-xs text-[#94A3B8] font-medium hidden sm:inline">
             7-Day Consecration Atmosphere
