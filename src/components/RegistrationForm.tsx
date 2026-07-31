@@ -978,13 +978,13 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
 
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-[#94A3B8] uppercase tracking-wider">
-                  Payment Receipt Reference / Remarks <span className="text-[#E85B00]">*</span>
+                  Payment Transfer Name / Remarks <span className="text-[#E85B00]">*</span>
                 </label>
                 <input
                   type="text"
                   value={paymentReceiptRef}
                   onChange={(e) => setPaymentReceiptRef(e.target.value)}
-                  placeholder="e.g. GTB-TRH-884912 or Transfer Name: Emmanuel Adeyemi"
+                  placeholder="e.g. POL-TRH-884912 or Transfer Name: Simon Priestley"
                   className="w-full px-4 py-2.5 rounded-xl bg-[#334155] border border-[#334155] focus:border-[#FF8A00] text-[#F8FAFC] placeholder-[#94A3B8] text-sm"
                   required
                 />
