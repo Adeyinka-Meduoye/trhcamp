@@ -1,4 +1,4 @@
-import app from './src/serverApp';
+import app from './src/serverApp.js';
 import path from 'path';
 import express from 'express';
 
