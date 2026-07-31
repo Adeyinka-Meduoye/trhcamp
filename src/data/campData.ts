@@ -48,7 +48,7 @@ export const CAMP_DETAILS = {
   fee: 1000,
   feeDisplay: '₦1,000',
   bankAccount: {
-    bankName: 'Polaris  Bank',
+    bankName: 'Polaris Bank',
     accountName: 'Jideofor Emmanuel Okoh',
     accountNumber: '1011312255',
     note: 'Please include your Full Name and "Victory Camp" in your transfer remark.',
@@ -254,7 +254,7 @@ export const COMMITTEES: CommitteeInfo[] = [
     description: 'Provides information, resolves attendee inquiries, handles general announcements, and assists lost and found.',
     responsibilities: [
       'Assist attendees with camp direction and inquiries',
-      'Manage lost and found desk',
+      'Disseminate information about the camp and ongoing changes',
       'Coordinate announcements with Administration',
     ],
     volunteersCount: 6,
