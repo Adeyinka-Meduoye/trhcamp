@@ -22,6 +22,7 @@ import {
   KeyRound,
   LogOut,
   UserCheck,
+  ShieldCheck,
   Loader2,
   X,
   Baby,
@@ -34,6 +35,8 @@ const ADMIN_USERNAMES = [
   'Senate President',
   'Innovation & Technology Lead',
   'Camp Director',
+  'Information Desk',
+  'Information Desk Two',
 ];
 
 interface AdminPortalProps {
@@ -119,15 +122,6 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
     setLoginError(null);
     setIsAuthenticating(true);
 
-    const clientPasswords: Record<string, string> = {
-      'Senior & Founding Pastor': 'trhPastor2026',
-      'Director, Church Administration': 'trhAdmin2026',
-      'Assistant Director, Church Administration': 'trhAsstAdmin2026',
-      'Senate President': 'trhSenate2026',
-      'Innovation & Technology Lead': 'trhTech2026',
-      'Camp Director': 'trhCamp2026',
-    };
-
     try {
       const res = await fetch('/api/admin/login', {
         method: 'POST',
@@ -150,28 +144,11 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
 
       if (data && data.error) {
         setLoginError(data.error);
-        return;
-      }
-
-      // If server returned non-JSON or response wasn't ok, fallback client check
-      const expected = clientPasswords[selectedUsername];
-      if (expected && passwordInput.trim() === expected) {
-        setAuthenticatedRole(selectedUsername);
-        localStorage.setItem('trh_camp_admin_role', selectedUsername);
-        setPasswordInput('');
       } else {
-        setLoginError(`Incorrect password for ${selectedUsername}. Access denied.`);
+        setLoginError(`Authentication failed for ${selectedUsername}. Please check your credentials.`);
       }
     } catch (err: any) {
-      // Fallback client check on network/server fetch error
-      const expected = clientPasswords[selectedUsername];
-      if (expected && passwordInput.trim() === expected) {
-        setAuthenticatedRole(selectedUsername);
-        localStorage.setItem('trh_camp_admin_role', selectedUsername);
-        setPasswordInput('');
-      } else {
-        setLoginError(`Incorrect password for ${selectedUsername}. Access denied.`);
-      }
+      setLoginError('Connection error verifying credentials. Please try again.');
     } finally {
       setIsAuthenticating(false);
     }
@@ -381,6 +358,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       ...attendee,
       isCheckedIn: newCheckedIn,
       checkedInAt: newCheckedIn ? new Date().toISOString() : undefined,
+      checkedInBy: newCheckedIn ? (authenticatedRole || 'Admin') : undefined,
     };
     onUpdateAttendee(updated);
   };
@@ -398,6 +376,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       'Payment Status',
       'Payment Ref',
       'Check-In Status',
+      'Checked-In By Admin',
+      'Checked-In Time',
       'Expectations',
     ];
 
@@ -413,6 +393,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       `"${a.paymentStatus}"`,
       `"${a.paymentReceiptRef || ''}"`,
       `"${a.isCheckedIn ? 'Checked In' : 'Pending'}"`,
+      `"${a.checkedInBy || ''}"`,
+      `"${a.checkedInAt ? new Date(a.checkedInAt).toLocaleString() : ''}"`,
       `"${a.expectations.replace(/"/g, '""')}"`,
     ]);
 
@@ -749,24 +731,32 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                   )}
                 </button>
 
-                <button
-                  onClick={() => handleToggleCheckIn(att)}
-                  className={`flex-1 py-1.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-all ${
-                    att.isCheckedIn
-                      ? 'bg-teal-950 text-teal-300 border border-teal-500/40'
-                      : 'bg-[#334155] text-[#94A3B8] border border-[#334155]'
-                  }`}
-                >
-                  {att.isCheckedIn ? (
-                    <>
-                      <UserCheck className="w-3.5 h-3.5 text-teal-400" /> Checked In
-                    </>
-                  ) : (
-                    <>
-                      <Clock className="w-3.5 h-3.5 text-[#94A3B8]" /> Check-In Pending
-                    </>
+                <div className="flex-1 space-y-1">
+                  <button
+                    onClick={() => handleToggleCheckIn(att)}
+                    className={`w-full py-1.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-all ${
+                      att.isCheckedIn
+                        ? 'bg-teal-950 text-teal-300 border border-teal-500/40'
+                        : 'bg-[#334155] text-[#94A3B8] border border-[#334155]'
+                    }`}
+                  >
+                    {att.isCheckedIn ? (
+                      <>
+                        <UserCheck className="w-3.5 h-3.5 text-teal-400" /> Checked In
+                      </>
+                    ) : (
+                      <>
+                        <Clock className="w-3.5 h-3.5 text-[#94A3B8]" /> Check-In Pending
+                      </>
+                    )}
+                  </button>
+                  {att.isCheckedIn && att.checkedInBy && (
+                    <div className="text-[10px] text-teal-400/90 text-center font-semibold truncate flex items-center justify-center gap-1">
+                      <ShieldCheck className="w-3 h-3 text-teal-400 shrink-0" />
+                      <span>By: <strong className="text-teal-300">{att.checkedInBy}</strong></span>
+                    </div>
                   )}
-                </button>
+                </div>
               </div>
             </div>
           ))
@@ -851,25 +841,35 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                       </button>
                     </td>
                     <td className="p-3.5">
-                      <button
-                        onClick={() => handleToggleCheckIn(att)}
-                        className={`px-2.5 py-1 rounded-lg font-bold text-[10px] flex items-center gap-1 cursor-pointer transition-all ${
-                          att.isCheckedIn
-                            ? 'bg-teal-950 text-teal-300 border border-teal-500/40'
-                            : 'bg-[#334155] text-[#94A3B8] border border-[#334155] hover:bg-teal-950 hover:text-teal-300'
-                        }`}
-                        title="Click to toggle Check-In Status"
-                      >
-                        {att.isCheckedIn ? (
-                          <>
-                            <UserCheck className="w-3 h-3 text-teal-400" /> Checked In
-                          </>
-                        ) : (
-                          <>
-                            <Clock className="w-3 h-3 text-[#94A3B8]" /> Pending Check-In
-                          </>
+                      <div className="space-y-1">
+                        <button
+                          onClick={() => handleToggleCheckIn(att)}
+                          className={`px-2.5 py-1 rounded-lg font-bold text-[10px] flex items-center gap-1 cursor-pointer transition-all ${
+                            att.isCheckedIn
+                              ? 'bg-teal-950 text-teal-300 border border-teal-500/40'
+                              : 'bg-[#334155] text-[#94A3B8] border border-[#334155] hover:bg-teal-950 hover:text-teal-300'
+                          }`}
+                          title="Click to toggle Check-In Status"
+                        >
+                          {att.isCheckedIn ? (
+                            <>
+                              <UserCheck className="w-3 h-3 text-teal-400" /> Checked In
+                            </>
+                          ) : (
+                            <>
+                              <Clock className="w-3 h-3 text-[#94A3B8]" /> Pending Check-In
+                            </>
+                          )}
+                        </button>
+                        {att.isCheckedIn && att.checkedInBy && (
+                          <div className="text-[10px] text-teal-400/90 font-medium flex items-center gap-1">
+                            <ShieldCheck className="w-3 h-3 text-teal-400 shrink-0" />
+                            <span className="truncate max-w-[140px]" title={`Checked in by ${att.checkedInBy}`}>
+                              By: <strong className="text-teal-300">{att.checkedInBy}</strong>
+                            </span>
+                          </div>
                         )}
-                      </button>
+                      </div>
                     </td>
                     <td className="p-3.5 text-right space-x-1">
                       <button

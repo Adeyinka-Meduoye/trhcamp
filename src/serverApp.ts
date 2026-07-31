@@ -20,6 +20,8 @@ const getExpectedAdminPassword = (username: string): string | undefined => {
     'Senate President': process.env.ADMIN_PASS_SENATE || 'trhSenate2026',
     'Innovation & Technology Lead': process.env.ADMIN_PASS_TECH || 'trhTech2026',
     'Camp Director': process.env.ADMIN_PASS_CAMP_DIR || 'trhCamp2026',
+    'Information Desk': process.env.ADMIN_PASS_INFO_DESK || 'trhInfo2026',
+    'Information Desk Two': process.env.ADMIN_PASS_INFO_DESK_TWO || 'trhInfoTwo2026',
   };
   return envMap[username];
 };

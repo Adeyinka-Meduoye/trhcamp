@@ -28,12 +28,14 @@ const ADMIN_ROLES = [
   'Senate President',
   'Innovation & Technology Lead',
   'Senior & Founding Pastor',
+  'Information Desk',
+  'Information Desk Two',
 ];
 
 interface PassVerificationModalProps {
   attendee: Attendee | null;
   searchedRegNum: string;
-  onConfirmCheckIn: (attendee: Attendee) => void;
+  onConfirmCheckIn: (attendee: Attendee, checkedInByAdmin?: string) => void;
   onClose: () => void;
 }
 
@@ -245,16 +247,23 @@ export const PassVerificationModal: React.FC<PassVerificationModalProps> = ({
                 <div className="flex flex-col sm:flex-row items-center gap-3 pt-2">
                   {!attendee.isCheckedIn ? (
                     <button
-                      onClick={() => onConfirmCheckIn(attendee)}
+                      onClick={() => onConfirmCheckIn(attendee, adminRole || 'Admin / Information Desk')}
                       className="w-full sm:flex-1 py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-black text-sm sm:text-base flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 transition-all cursor-pointer"
                     >
                       <UserCheck className="w-5 h-5 text-white" />
                       <span>CONFIRM & GRANT CAMP ACCESS</span>
                     </button>
                   ) : (
-                    <div className="w-full sm:flex-1 p-3 rounded-2xl bg-emerald-950/60 border border-emerald-500/40 text-emerald-300 font-bold text-center text-xs flex items-center justify-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                      <span>Attendee Is Verified & Checked In</span>
+                    <div className="w-full sm:flex-1 p-3 rounded-2xl bg-emerald-950/60 border border-emerald-500/40 text-emerald-300 font-bold text-center text-xs flex flex-col items-center justify-center gap-1">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                        <span>Attendee Is Verified & Checked In</span>
+                      </div>
+                      {attendee.checkedInBy && (
+                        <span className="text-[11px] text-emerald-400/80 font-normal">
+                          Confirmed by: <strong className="font-semibold">{attendee.checkedInBy}</strong>
+                        </span>
+                      )}
                     </div>
                   )}
 
@@ -271,10 +280,10 @@ export const PassVerificationModal: React.FC<PassVerificationModalProps> = ({
                   <div className="p-4 rounded-2xl bg-[#0F172A] border border-amber-500/40 space-y-2">
                     <div className="flex items-center gap-2 text-amber-400 font-bold text-xs">
                       <Lock className="w-4 h-4 shrink-0" />
-                      <span>Official Protocol Desk Authorization Required</span>
+                      <span>Official Information Desk Authorization Required</span>
                     </div>
                     <p className="text-xs text-[#CBD5E1] leading-relaxed">
-                      Pass details verified. For security reasons, check-in confirmation can only be granted by an authorized <strong>Protocol Desk Officer</strong> or <strong>Camp Admin</strong> at the venue desk.
+                      Pass details verified. For security reasons, check-in confirmation can only be granted by an authorized <strong>Information Desk Officer</strong> or <strong>Camp Admin</strong> at the venue desk.
                     </p>
                   </div>
 
@@ -284,7 +293,7 @@ export const PassVerificationModal: React.FC<PassVerificationModalProps> = ({
                       <div className="flex items-center justify-between">
                         <h4 className="font-extrabold text-sm text-[#F8FAFC] flex items-center gap-2">
                           <Lock className="w-4 h-4 text-[#FF8A00]" />
-                          <span>Admin / Protocol Desk Unlock</span>
+                          <span>Admin / Information Desk Unlock</span>
                         </h4>
                         <button
                           type="button"
@@ -370,7 +379,7 @@ export const PassVerificationModal: React.FC<PassVerificationModalProps> = ({
                         className="w-full sm:flex-1 py-3 px-5 rounded-2xl bg-[#FF8A00]/20 hover:bg-[#FF8A00]/30 text-[#FF8A00] border border-[#FF8A00]/40 font-extrabold text-xs flex items-center justify-center gap-2 cursor-pointer transition-colors"
                       >
                         <Lock className="w-4 h-4 text-[#FF8A00]" />
-                        <span>Protocol Officer Unlock</span>
+                        <span>Information Desk Officer Unlock</span>
                       </button>
 
                       <button
@@ -392,7 +401,7 @@ export const PassVerificationModal: React.FC<PassVerificationModalProps> = ({
               <div className="space-y-1">
                 <h4 className="text-lg font-bold text-[#F8FAFC]">Registration Pass Not Found</h4>
                 <p className="text-xs text-[#94A3B8] max-w-sm mx-auto">
-                  No registration record matches pass number <span className="text-[#FF8A00] font-mono font-bold">{searchedRegNum}</span>. Please verify registration or consult the Protocol Desk.
+                  No registration record matches pass number <span className="text-[#FF8A00] font-mono font-bold">{searchedRegNum}</span>. Please verify registration or consult the Information Desk.
                 </p>
               </div>
               <button

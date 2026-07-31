@@ -66,6 +66,7 @@ export interface Attendee {
   registeredBy?: string;
   isCheckedIn?: boolean;
   checkedInAt?: string;
+  checkedInBy?: string;
 }
 
 export interface ScheduleItem {

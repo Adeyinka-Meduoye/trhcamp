@@ -245,8 +245,13 @@ export default function App() {
         <PassVerificationModal
           attendee={verifyingScan.attendee}
           searchedRegNum={verifyingScan.regNum}
-          onConfirmCheckIn={async (att) => {
-            const updated = { ...att, isCheckedIn: true };
+          onConfirmCheckIn={async (att, checkedInByAdmin) => {
+            const updated = {
+              ...att,
+              isCheckedIn: true,
+              checkedInAt: new Date().toISOString(),
+              checkedInBy: checkedInByAdmin || 'Information Desk Officer',
+            };
             await handleUpdateAttendee(updated);
             setVerifyingScan({ regNum: att.regNumber, attendee: updated });
           }}
