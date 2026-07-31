@@ -48,9 +48,9 @@ export const CAMP_DETAILS = {
   fee: 1000,
   feeDisplay: '₦1,000',
   bankAccount: {
-    bankName: 'Polaris Bank',
-    accountName: 'Jideofor Emmanuel Okoh',
-    accountNumber: '1011312255',
+    bankName: 'GTBank / Access Bank',
+    accountName: 'TRH Ministries Global',
+    accountNumber: '0123456789',
     note: 'Please include your Full Name and "Victory Camp" in your transfer remark.',
   },
 };
@@ -254,7 +254,7 @@ export const COMMITTEES: CommitteeInfo[] = [
     description: 'Provides information, resolves attendee inquiries, handles general announcements, and assists lost and found.',
     responsibilities: [
       'Assist attendees with camp direction and inquiries',
-      'Disseminate information about the camp and ongoing changes',
+      'Manage lost and found desk',
       'Coordinate announcements with Administration',
     ],
     volunteersCount: 6,

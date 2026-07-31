@@ -6,6 +6,7 @@ import {
   subscribeExpectations,
   saveExpectationToFirestore,
   incrementAmenInFirestore,
+  deleteExpectationFromFirestore,
 } from '../lib/firebase';
 import {
   Flame,
@@ -16,6 +17,14 @@ import {
   Sparkles,
   ShieldCheck,
   Search,
+  Trash2,
+  AlertTriangle,
+  Lock,
+  Eye,
+  EyeOff,
+  Loader2,
+  X,
+  ShieldAlert,
 } from 'lucide-react';
 
 export const ExpectationWall: React.FC = () => {
@@ -27,6 +36,16 @@ export const ExpectationWall: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
   const [category, setCategory] = useState<ExpectationPost['category']>('Spiritual Growth');
   const [message, setMessage] = useState('');
+
+  // Deletion Modal state for Innovation & Technology Lead
+  const [postToDelete, setPostToDelete] = useState<ExpectationPost | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isAdminAuthRequired, setIsAdminAuthRequired] = useState(false);
+  const [adminPasswordInput, setAdminPasswordInput] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     const unsubscribe = subscribeExpectations((fetchedPosts) => {
@@ -78,6 +97,79 @@ export const ExpectationWall: React.FC = () => {
     );
   };
 
+  // Check if current session is logged in as Innovation & Technology Lead
+  const isTechLeadLoggedIn = (): boolean => {
+    return localStorage.getItem('trh_camp_admin_role') === 'Innovation & Technology Lead';
+  };
+
+  // Open deletion flow
+  const handleInitiateDelete = (post: ExpectationPost) => {
+    setPostToDelete(post);
+    setAuthError(null);
+    setAdminPasswordInput('');
+    
+    if (isTechLeadLoggedIn()) {
+      setIsAdminAuthRequired(false);
+    } else {
+      setIsAdminAuthRequired(true);
+    }
+    setShowDeleteModal(true);
+  };
+
+  // Authorize password for Innovation & Technology Lead
+  const handleAuthorizeAdmin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!adminPasswordInput.trim()) return;
+
+    setIsAuthenticating(true);
+    setAuthError(null);
+
+    try {
+      const res = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: 'Innovation & Technology Lead',
+          password: adminPasswordInput.trim(),
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        localStorage.setItem('trh_camp_admin_role', 'Innovation & Technology Lead');
+        setIsAdminAuthRequired(false);
+        setAuthError(null);
+      } else {
+        setAuthError(data.error || 'Incorrect password for Innovation & Technology Lead.');
+      }
+    } catch (err) {
+      setAuthError('Connection error verifying credentials. Please try again.');
+    } finally {
+      setIsAuthenticating(false);
+    }
+  };
+
+  // Execute deletion in Firestore
+  const handleConfirmDelete = async () => {
+    if (!postToDelete) return;
+
+    setIsDeleting(true);
+    const targetId = postToDelete.id;
+
+    // Optimistically remove from state
+    setPosts((prev) => prev.filter((p) => p.id !== targetId));
+
+    try {
+      await deleteExpectationFromFirestore(targetId);
+      setShowDeleteModal(false);
+      setPostToDelete(null);
+    } catch (err) {
+      console.error('Error deleting entry from Firestore:', err);
+      alert('Failed to delete entry from database. Please check connection.');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   const filteredPosts = posts.filter((p) => {
     const matchesCategory = activeCategory === 'All' || p.category === activeCategory;
@@ -114,6 +206,13 @@ export const ExpectationWall: React.FC = () => {
         <p className="text-xs sm:text-sm text-[#94A3B8] max-w-3xl leading-relaxed">
           Post your faith expectations for the 7-day Victory Camp and join in agreement with fellow believers by clicking <strong>Amen 🙏</strong> on their requests!
         </p>
+
+        {isTechLeadLoggedIn() && (
+          <div className="flex items-center gap-2 p-2.5 rounded-xl bg-red-500/10 border border-red-500/30 text-xs text-red-300 font-semibold">
+            <ShieldAlert className="w-4 h-4 text-red-400 shrink-0" />
+            <span>Admin Active: Logged in as <strong>Innovation & Technology Lead</strong> (Victory Wall Entry Deletion Enabled)</span>
+          </div>
+        )}
 
         <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
           <button
@@ -235,16 +334,29 @@ export const ExpectationWall: React.FC = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: '-20px' }}
             transition={{ duration: 0.45, delay: idx * 0.05, ease: [0.22, 1, 0.36, 1] }}
-            className="bg-[#1E293B] rounded-2xl p-5 border border-[#334155] shadow-sm hover:shadow-md hover:border-[#FF8A00]/40 transition-all flex flex-col justify-between space-y-4"
+            className="bg-[#1E293B] rounded-2xl p-5 border border-[#334155] shadow-sm hover:shadow-md hover:border-[#FF8A00]/40 transition-all flex flex-col justify-between space-y-4 relative group"
           >
             <div className="space-y-3">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-2">
                 <span className="text-[10px] font-mono uppercase bg-[#FF8A00]/20 text-[#FF8A00] border border-[#FF8A00]/30 px-2 py-0.5 rounded-md font-bold">
                   {post.category}
                 </span>
-                <span className="text-[11px] font-mono text-[#94A3B8]">
-                  {post.authorName}
-                </span>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-mono text-[#94A3B8]">
+                    {post.authorName}
+                  </span>
+
+                  {/* Delete Button for Victory Wall Entry */}
+                  <button
+                    type="button"
+                    onClick={() => handleInitiateDelete(post)}
+                    title="Delete Entry (Innovation & Technology Lead)"
+                    className="p-1.5 rounded-lg text-red-400 hover:text-red-200 hover:bg-red-500/20 border border-red-500/30 transition-all cursor-pointer flex items-center justify-center shrink-0"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               </div>
 
               <p className="text-xs sm:text-sm text-[#F8FAFC] font-serif italic leading-relaxed bg-[#0F172A] p-3.5 rounded-xl border border-[#334155]">
@@ -270,6 +382,181 @@ export const ExpectationWall: React.FC = () => {
           </motion.div>
         ))}
       </div>
+
+      {/* DELETION CONFIRMATION & AUTH MODAL */}
+      {showDeleteModal && postToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0F172A]/80 backdrop-blur-sm animate-fadeIn">
+          <motion.div
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="bg-[#1E293B] border-2 border-red-500/50 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-6 text-[#F8FAFC]"
+          >
+            {isAdminAuthRequired ? (
+              /* Step 1: Admin Password Authorization required */
+              <form onSubmit={handleAuthorizeAdmin} className="space-y-5">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-2xl bg-red-500/20 text-red-400 border border-red-500/40 flex items-center justify-center shrink-0">
+                      <Lock className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h3 className="font-extrabold text-base text-[#F8FAFC]">
+                        Innovation & Technology Lead Verification
+                      </h3>
+                      <p className="text-xs text-[#94A3B8]">
+                        Restricted Admin Action
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowDeleteModal(false)}
+                    className="text-[#94A3B8] hover:text-[#F8FAFC] cursor-pointer"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <p className="text-xs text-[#CBD5E1] leading-relaxed bg-[#0F172A] p-3.5 rounded-xl border border-[#334155]">
+                  Deleting Victory Wall entries is restricted exclusively to the <strong>Innovation & Technology Lead</strong> official role. Please authorize with your password:
+                </p>
+
+                {authError && (
+                  <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/40 text-red-300 text-xs flex items-center gap-2">
+                    <AlertTriangle className="w-4 h-4 text-red-400 shrink-0" />
+                    <span>{authError}</span>
+                  </div>
+                )}
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-[#94A3B8]">
+                    Innovation & Technology Lead Password *
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      value={adminPasswordInput}
+                      onChange={(e) => setAdminPasswordInput(e.target.value)}
+                      placeholder="Enter official tech lead password..."
+                      className="w-full px-4 py-2.5 rounded-xl border border-[#334155] bg-[#334155] text-[#F8FAFC] text-sm pr-10"
+                      required
+                      autoFocus
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-3 text-[#94A3B8] hover:text-[#F8FAFC] cursor-pointer"
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-end gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowDeleteModal(false)}
+                    className="px-4 py-2 rounded-xl bg-[#334155] hover:bg-[#475569] text-[#F8FAFC] text-xs font-semibold cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isAuthenticating}
+                    className="px-5 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-[#F8FAFC] text-xs font-bold flex items-center gap-2 shadow cursor-pointer disabled:opacity-50"
+                  >
+                    {isAuthenticating ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Verifying...</span>
+                      </>
+                    ) : (
+                      <>
+                        <ShieldCheck className="w-4 h-4" />
+                        <span>Authorize & Proceed</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            ) : (
+              /* Step 2: Confirmation Modal after Auth */
+              <div className="space-y-5">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-2xl bg-red-500/20 text-red-400 border border-red-500/40 flex items-center justify-center shrink-0">
+                      <Trash2 className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h3 className="font-extrabold text-base text-[#F8FAFC]">
+                        Delete Victory Wall Entry
+                      </h3>
+                      <p className="text-xs text-red-400 font-semibold">
+                        Authorized: Innovation & Technology Lead
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowDeleteModal(false)}
+                    className="text-[#94A3B8] hover:text-[#F8FAFC] cursor-pointer"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <p className="text-xs text-[#CBD5E1] leading-relaxed">
+                  Are you sure you want to permanently delete this faith expectation from the Victory Wall?
+                </p>
+
+                {/* Entry Card Preview */}
+                <div className="bg-[#0F172A] p-4 rounded-2xl border border-red-500/30 space-y-2">
+                  <div className="flex items-center justify-between text-[11px] font-mono">
+                    <span className="text-[#FF8A00] font-bold uppercase">{postToDelete.category}</span>
+                    <span className="text-[#94A3B8]">{postToDelete.authorName}</span>
+                  </div>
+                  <p className="text-xs text-[#F8FAFC] font-serif italic leading-relaxed">
+                    "{postToDelete.message}"
+                  </p>
+                </div>
+
+                <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300 text-xs flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 text-red-400 shrink-0" />
+                  <span>This action cannot be undone and will delete the post from Firestore.</span>
+                </div>
+
+                <div className="flex items-center justify-end gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowDeleteModal(false)}
+                    className="px-4 py-2 rounded-xl bg-[#334155] hover:bg-[#475569] text-[#F8FAFC] text-xs font-semibold cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleConfirmDelete}
+                    disabled={isDeleting}
+                    className="px-5 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-[#F8FAFC] text-xs font-extrabold flex items-center gap-2 shadow cursor-pointer disabled:opacity-50"
+                  >
+                    {isDeleting ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Deleting...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Trash2 className="w-4 h-4" />
+                        <span>Yes, Delete Entry</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            )}
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 };

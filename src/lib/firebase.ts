@@ -150,3 +150,13 @@ export const incrementAmenInFirestore = async (postId: string, currentCount: num
     throw err;
   }
 };
+
+export const deleteExpectationFromFirestore = async (postId: string): Promise<void> => {
+  try {
+    const docRef = doc(db, EXPECTATIONS_COLLECTION, postId);
+    await deleteDoc(docRef);
+  } catch (err) {
+    console.error('Failed to delete expectation post from Firestore:', err);
+    throw err;
+  }
+};
