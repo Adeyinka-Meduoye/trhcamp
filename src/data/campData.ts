@@ -48,9 +48,9 @@ export const CAMP_DETAILS = {
   fee: 1000,
   feeDisplay: '₦1,000',
   bankAccount: {
-    bankName: 'GTBank / Access Bank',
-    accountName: 'TRH Ministries Global',
-    accountNumber: '0123456789',
+    bankName: 'Polaris  Bank',
+    accountName: 'JIDEOFOR EMMANUEL OKOH',
+    accountNumber: '1011312255',
     note: 'Please include your Full Name and "Victory Camp" in your transfer remark.',
   },
 };
