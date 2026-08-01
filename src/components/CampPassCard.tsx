@@ -274,6 +274,15 @@ export const CampPassCard: React.FC<CampPassCardProps> = ({
                 <span className="text-[10px] text-[#94A3B8] uppercase">Committee Interest</span>
                 <p className="font-semibold text-[#FF8A00]">{attendee.departmentInterest}</p>
               </div>
+
+              <div className="col-span-2 p-2.5 rounded-xl bg-[#1E293B] border border-[#FF8A00]/30 space-y-0.5">
+                <span className="text-[10px] text-[#94A3B8] uppercase block font-semibold">
+                  Payment Transfer Name / Remarks
+                </span>
+                <p className="font-mono font-bold text-[#FF8A00] text-xs break-all">
+                  {attendee.paymentReceiptRef || 'Not provided'}
+                </p>
+              </div>
             </div>
 
             <div className="flex flex-wrap gap-2 pt-1">

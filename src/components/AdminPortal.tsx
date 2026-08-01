@@ -1423,7 +1423,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                       type="text"
                       value={manualReceiptRef}
                       onChange={(e) => setManualReceiptRef(e.target.value)}
-                      placeholder="e.g. Cash at Protocol Desk / Bank Transfer Ref"
+                      placeholder="e.g. Cash at Information Desk / Bank Transfer Ref"
                       className="w-full px-3 py-2 rounded-xl border border-[#334155] bg-[#334155] text-[#F8FAFC] placeholder-[#94A3B8]"
                     />
                   </div>

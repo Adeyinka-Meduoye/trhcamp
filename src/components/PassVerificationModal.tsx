@@ -214,6 +214,14 @@ export const PassVerificationModal: React.FC<PassVerificationModalProps> = ({
                       {attendee.sleepOver ? 'Yes (Camp Facility)' : 'No (Day Participant)'}
                     </span>
                   </div>
+                  <div className="col-span-2 pt-2 border-t border-[#334155]">
+                    <span className="text-[#94A3B8] block text-[10px] uppercase font-bold">
+                      Payment Transfer Name / Remarks
+                    </span>
+                    <span className="text-[#FF8A00] font-mono font-bold text-xs break-all">
+                      {attendee.paymentReceiptRef || 'None provided'}
+                    </span>
+                  </div>
                   {attendee.emergencyName && (
                     <div className="col-span-2 pt-2 border-t border-[#334155]">
                       <span className="text-[#94A3B8] block text-[10px] uppercase">Emergency Contact</span>

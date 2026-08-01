@@ -363,7 +363,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
           <div className="p-4 rounded-2xl bg-[#0F172A] border border-[#334155] text-xs text-[#94A3B8] space-y-2 text-left">
             <p className="font-semibold text-[#F8FAFC]">Need On-Site Registration or Assistance?</p>
             <p>
-              Please report directly to the <span className="text-[#FF8A00] font-semibold">TRH Protocol & Admin Desk</span> at the church premises ({CAMP_DETAILS.venue}) during camp arrival.
+              Please report directly to the <span className="text-[#FF8A00] font-semibold">TRH Information Desk</span> at the church premises ({CAMP_DETAILS.venue}) during camp arrival.
             </p>
             <div className="pt-2 border-t border-[#334155] text-[11px] text-[#94A3B8] font-mono">
               💡 <span className="font-bold text-[#FF8A00]">Developer / Administrator Note:</span> To reopen or adjust the registration deadline, edit <code className="bg-[#1E293B] px-1.5 py-0.5 rounded text-[#F8FAFC]">REGISTRATION_CLOSURE_DATE</code> or set <code className="bg-[#1E293B] px-1.5 py-0.5 rounded text-[#F8FAFC]">IS_REGISTRATION_MANUALLY_OVERRIDDEN = true</code> in <code className="text-[#FF8A00]">/src/data/campData.ts</code>.
@@ -679,7 +679,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
                     'Games & Recreation',
                     'Information Desk',
                     'Other',
-                  ].map((dept) => (
+                  ].map((dept) => ( 
                     <button
                       key={dept}
                       type="button"

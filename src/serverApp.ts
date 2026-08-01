@@ -66,6 +66,7 @@ const generatePassSvg = (attendee: any, qrDataUri: string) => {
   const dept = (attendee.departmentInterest || 'General').slice(0, 20);
   const stay = attendee.sleepOver ? '🛌 Sleeping Over' : '🚌 Day Commuter';
   const payment = attendee.paymentStatus === 'Paid' ? 'Paid (₦1,000)' : 'Pending';
+  const paymentRef = (attendee.paymentReceiptRef || 'N/A').slice(0, 42);
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <svg width="800" height="480" viewBox="0 0 800 480" xmlns="http://www.w3.org/2000/svg">
@@ -119,12 +120,17 @@ const generatePassSvg = (attendee: any, qrDataUri: string) => {
   <text x="222" y="276" fill="#94A3B8" font-family="system-ui, -apple-system, sans-serif" font-size="9">COMMITTEE</text>
   <text x="222" y="294" fill="#FF8A00" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="bold">${dept}</text>
 
-  <!-- Status Badges -->
-  <rect x="40" y="320" width="170" height="34" rx="8" fill="#334155"/>
-  <text x="125" y="341" fill="#F8FAFC" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="bold" text-anchor="middle">${stay}</text>
+  <!-- Payment Transfer Name / Remark Box -->
+  <rect x="40" y="314" width="330" height="44" rx="8" fill="#1E293B" stroke="#FF8A00" stroke-opacity="0.4"/>
+  <text x="52" y="330" fill="#94A3B8" font-family="system-ui, -apple-system, sans-serif" font-size="8" font-weight="800" letter-spacing="0.5">PAYMENT TRANSFER NAME / REMARKS</text>
+  <text x="52" y="348" fill="#FF8A00" font-family="Consolas, monospace" font-size="11" font-weight="bold">${paymentRef}</text>
 
-  <rect x="220" y="320" width="150" height="34" rx="8" fill="#065F46" stroke="#10B981"/>
-  <text x="295" y="341" fill="#34D399" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="bold" text-anchor="middle">Payment: ${payment}</text>
+  <!-- Status Badges -->
+  <rect x="40" y="366" width="160" height="30" rx="8" fill="#334155"/>
+  <text x="120" y="385" fill="#F8FAFC" font-family="system-ui, -apple-system, sans-serif" font-size="10" font-weight="bold" text-anchor="middle">${stay}</text>
+
+  <rect x="210" y="366" width="160" height="30" rx="8" fill="#065F46" stroke="#10B981"/>
+  <text x="290" y="385" fill="#34D399" font-family="system-ui, -apple-system, sans-serif" font-size="10" font-weight="bold" text-anchor="middle">Payment: ${payment}</text>
 
   <!-- QR Code Box Right -->
   <rect x="530" y="140" width="230" height="230" rx="16" fill="#1E293B" stroke="#FF8A00" stroke-width="2"/>
