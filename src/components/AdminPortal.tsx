@@ -77,6 +77,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   const [filterDepartment, setFilterDepartment] = useState<string>('all');
   const [filterSleepover, setFilterSleepover] = useState<string>('all');
   const [filterCheckIn, setFilterCheckIn] = useState<string>('all');
+  const [filterChildren, setFilterChildren] = useState<string>('all');
+  const [filterMedical, setFilterMedical] = useState<string>('all');
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [manualSurname, setManualSurname] = useState('');
@@ -336,7 +338,16 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       filterCheckIn === 'all' ||
       (filterCheckIn === 'checkedIn' ? a.isCheckedIn : !a.isCheckedIn);
 
-    return matchesSearch && matchesPayment && matchesDept && matchesSleep && matchesCheckIn;
+    const hasKids = Boolean(a.hasChildren || (a.childrenCount && a.childrenCount > 0) || (a.childrenAges && a.childrenAges.length > 0));
+    const matchesChildren =
+      filterChildren === 'all' ||
+      (filterChildren === 'yes' ? hasKids : !hasKids);
+
+    const matchesMedical =
+      filterMedical === 'all' ||
+      (filterMedical === 'yes' ? a.hasMedicalCondition : !a.hasMedicalCondition);
+
+    return matchesSearch && matchesPayment && matchesDept && matchesSleep && matchesCheckIn && matchesChildren && matchesMedical;
   });
 
   const handleTogglePayment = (attendee: Attendee) => {
@@ -378,25 +389,44 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       'Check-In Status',
       'Checked-In By Admin',
       'Checked-In Time',
+      'Children (≤12)',
+      'Children Count & Ages',
+      'Medical Alerts',
+      'Medical Details',
       'Expectations',
     ];
 
-    const rows = attendees.map((a) => [
-      `"${a.regNumber}"`,
-      `"${a.surname}"`,
-      `"${a.firstName}"`,
-      `"${a.gender}"`,
-      `"${a.phone}"`,
-      `"${a.isMember ? 'Member' : 'Visitor'}"`,
-      `"${a.departmentInterest}"`,
-      `"${a.sleepOver ? 'Yes' : 'No'}"`,
-      `"${a.paymentStatus}"`,
-      `"${a.paymentReceiptRef || ''}"`,
-      `"${a.isCheckedIn ? 'Checked In' : 'Pending'}"`,
-      `"${a.checkedInBy || ''}"`,
-      `"${a.checkedInAt ? new Date(a.checkedInAt).toLocaleString() : ''}"`,
-      `"${a.expectations.replace(/"/g, '""')}"`,
-    ]);
+    const rows = attendees.map((a) => {
+      const hasKids = Boolean(a.hasChildren || (a.childrenCount && a.childrenCount > 0) || (a.childrenAges && a.childrenAges.length > 0));
+      const kidsInfo = hasKids
+        ? `${a.childrenCount || (a.childrenAges ? a.childrenAges.length : 1)} child(ren) [${(a.childrenAges || []).join('; ')}]`
+        : 'None';
+      const medAlert = a.hasMedicalCondition ? 'Yes' : 'No';
+      const medDetails = a.hasMedicalCondition
+        ? `${a.medicalDetails || 'Condition Flagged'}${a.isTakingMedication ? ` (Medication: ${a.medicationDetails || 'Yes'})` : ''}`
+        : 'None';
+
+      return [
+        `"${a.regNumber}"`,
+        `"${a.surname}"`,
+        `"${a.firstName}"`,
+        `"${a.gender}"`,
+        `"${a.phone}"`,
+        `"${a.isMember ? 'Member' : 'Visitor'}"`,
+        `"${a.departmentInterest}"`,
+        `"${a.sleepOver ? 'Yes' : 'No'}"`,
+        `"${a.paymentStatus}"`,
+        `"${a.paymentReceiptRef || ''}"`,
+        `"${a.isCheckedIn ? 'Checked In' : 'Pending'}"`,
+        `"${a.checkedInBy || ''}"`,
+        `"${a.checkedInAt ? new Date(a.checkedInAt).toLocaleString() : ''}"`,
+        `"${hasKids ? 'Yes' : 'No'}"`,
+        `"${kidsInfo.replace(/"/g, '""')}"`,
+        `"${medAlert}"`,
+        `"${medDetails.replace(/"/g, '""')}"`,
+        `"${a.expectations.replace(/"/g, '""')}"`,
+      ];
+    });
 
     const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
     const encodedUri = encodeURI(csvContent);
@@ -579,8 +609,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
 
       {/* Search & Filter Controls */}
       <div className="bg-[#1E293B] p-4 rounded-2xl border border-[#334155] shadow-sm space-y-3">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-          <div className="relative sm:col-span-2 md:col-span-2 lg:col-span-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3">
+          <div className="relative sm:col-span-2 md:col-span-2 lg:col-span-2 xl:col-span-2">
             <Search className="w-4 h-4 text-[#94A3B8] absolute left-3 top-3" />
             <input
               type="text"
@@ -632,6 +662,26 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
             <option value="all">Sleepover: All</option>
             <option value="yes">Sleepover Only</option>
             <option value="no">Commuters Only</option>
+          </select>
+
+          <select
+            value={filterChildren}
+            onChange={(e) => setFilterChildren(e.target.value)}
+            className="px-3 py-2.5 rounded-xl border border-[#334155] bg-[#334155] text-[#F8FAFC] text-xs font-medium focus:border-[#FF8A00] outline-none cursor-pointer"
+          >
+            <option value="all">Children (≤12): All</option>
+            <option value="yes">With Children (≤12)</option>
+            <option value="no">No Children</option>
+          </select>
+
+          <select
+            value={filterMedical}
+            onChange={(e) => setFilterMedical(e.target.value)}
+            className="px-3 py-2.5 rounded-xl border border-[#334155] bg-[#334155] text-[#F8FAFC] text-xs font-medium focus:border-[#FF8A00] outline-none cursor-pointer"
+          >
+            <option value="all">Medical Alerts: All</option>
+            <option value="yes">With Medical Alerts</option>
+            <option value="no">No Medical Alerts</option>
           </select>
         </div>
       </div>

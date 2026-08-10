@@ -14,6 +14,7 @@ import {
   MapPin,
   Heart,
   Baby,
+  AlertCircle,
   Lock,
   Eye,
   EyeOff,
@@ -242,6 +243,25 @@ export const PassVerificationModal: React.FC<PassVerificationModalProps> = ({
                           <span className="text-[#94A3B8] text-[11px] block mt-0.5">
                             Child Ages: {attendee.childrenAges.join(', ')}
                           </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {attendee.hasMedicalCondition && (
+                    <div className="col-span-2 pt-2.5 border-t border-red-500/40 bg-red-950/60 p-3 rounded-xl border flex items-start gap-2 text-xs">
+                      <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+                      <div>
+                        <span className="font-bold text-red-300 block uppercase tracking-wider text-[10px]">
+                          Medical Alert Flagged:
+                        </span>
+                        <p className="text-red-200 font-semibold mt-0.5">
+                          {attendee.medicalDetails || 'Medical condition specified on record.'}
+                        </p>
+                        {attendee.isTakingMedication && attendee.medicationDetails && (
+                          <p className="text-red-300/80 text-[11px] mt-0.5">
+                            Medication: {attendee.medicationDetails}
+                          </p>
                         )}
                       </div>
                     </div>

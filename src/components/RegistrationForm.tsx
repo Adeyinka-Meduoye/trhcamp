@@ -172,13 +172,28 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
     } else if (currentSection === 5) {
       // Payment section
       if (paymentStatus === 'Paid' && !paymentReceiptRef.trim()) {
-        setFormError('Please enter your payment reference / receipt number or bank transfer note.');
+        setFormError('Please enter your payment transfer name or remarks.');
         return false;
       }
     } else if (currentSection === 6) {
-      if (hasChildren && childrenAges.some((a) => !a.trim())) {
-        setFormError('Please enter the age for each child.');
-        return false;
+      if (hasChildren) {
+        if (childrenAges.some((a) => !a.trim())) {
+          setFormError('Please enter the age for each child.');
+          return false;
+        }
+        for (let i = 0; i < childrenAges.length; i++) {
+          const ageStr = childrenAges[i] || '';
+          const numbers = ageStr.match(/\d+/g);
+          if (numbers) {
+            const invalidAge = numbers.map(Number).find((num) => num > 12);
+            if (invalidAge !== undefined) {
+              setFormError(
+                `Child #${i + 1} age (${invalidAge}) exceeds 12 years. Children registered under Section F must be 12 years old or below. Teenagers (13+) must fill an independent registration form.`
+              );
+              return false;
+            }
+          }
+        }
       }
     } else if (currentSection === 7) {
       // Expectations is now optional - participants can share anonymously or skip
@@ -679,7 +694,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
                     'Games & Recreation',
                     'Information Desk',
                     'Other',
-                  ].map((dept) => ( 
+                  ].map((dept) => (
                     <button
                       key={dept}
                       type="button"
@@ -976,22 +991,24 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
                 </div>
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-[#94A3B8] uppercase tracking-wider">
-                  Payment Transfer Name / Remarks <span className="text-[#E85B00]">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={paymentReceiptRef}
-                  onChange={(e) => setPaymentReceiptRef(e.target.value)}
-                  placeholder="e.g. POL-TRH-884912 or Transfer Name: Simon Priestley"
-                  className="w-full px-4 py-2.5 rounded-xl bg-[#334155] border border-[#334155] focus:border-[#FF8A00] text-[#F8FAFC] placeholder-[#94A3B8] text-sm"
-                  required
-                />
-                <p className="text-[11px] text-[#94A3B8]">
-                  Please share your payment receipt or reference with the camp administrator for official verification.
-                </p>
-              </div>
+              {paymentStatus === 'Paid' && (
+                <div className="space-y-1.5 animate-fadeIn">
+                  <label className="text-xs font-bold text-[#94A3B8] uppercase tracking-wider">
+                    Payment Transfer Name / Remarks <span className="text-[#E85B00]">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={paymentReceiptRef}
+                    onChange={(e) => setPaymentReceiptRef(e.target.value)}
+                    placeholder="e.g. POL-TRH-884912 or Transfer Name: Simon Priestley"
+                    className="w-full px-4 py-2.5 rounded-xl bg-[#334155] border border-[#334155] focus:border-[#FF8A00] text-[#F8FAFC] placeholder-[#94A3B8] text-sm"
+                    required
+                  />
+                  <p className="text-[11px] text-[#94A3B8]">
+                    Please share your payment receipt or reference with the camp administrator for official verification.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -1011,7 +1028,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
               <div className="p-4 rounded-2xl bg-[#0F172A] border border-[#FF8A00]/30 text-xs text-[#94A3B8] space-y-1">
                 <p className="font-bold text-[#FF8A00]">Child & Teenager Guidelines:</p>
                 <p>• Children aged 12 years and below are solely the responsibility of parents/guardians.</p>
-                <p>• Teenagers (13+) are accorded the same plan as adults (One meal a day breaking fast at 3:00 PM).</p>
+                <p>• Teenagers (13+) must fill an independent registration form as adult participants.</p>
               </div>
 
               <div className="space-y-2">
@@ -1065,21 +1082,36 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
 
                   <div className="space-y-3 pt-2">
                     <label className="text-xs font-bold text-[#94A3B8] uppercase tracking-wider block">
-                      Specify Age for Each Child:
+                      Specify Age for Each Child (Maximum 12 years):
                     </label>
-                    {Array.from({ length: childrenCount }).map((_, idx) => (
-                      <div key={idx} className="flex items-center gap-3">
-                        <span className="w-6 text-xs font-bold text-[#FF8A00] font-mono">#{idx + 1}</span>
-                        <input
-                          type="text"
-                          value={childrenAges[idx] || ''}
-                          onChange={(e) => handleChildAgeChange(idx, e.target.value)}
-                          placeholder="e.g. 5 years old / 14 years (Teen)"
-                          className="flex-1 px-3.5 py-2 rounded-xl bg-[#334155] border border-[#334155] focus:border-[#FF8A00] text-[#F8FAFC] placeholder-[#94A3B8] text-sm"
-                          required
-                        />
-                      </div>
-                    ))}
+                    {Array.from({ length: childrenCount }).map((_, idx) => {
+                      const ageVal = childrenAges[idx] || '';
+                      const nums = ageVal.match(/\d+/g);
+                      const isOver12 = nums ? nums.map(Number).some((n) => n > 12) : false;
+
+                      return (
+                        <div key={idx} className="space-y-1">
+                          <div className="flex items-center gap-3">
+                            <span className="w-6 text-xs font-bold text-[#FF8A00] font-mono">#{idx + 1}</span>
+                            <input
+                              type="text"
+                              value={ageVal}
+                              onChange={(e) => handleChildAgeChange(idx, e.target.value)}
+                              placeholder="e.g. 5 years old / 8 / 12 years (max age: 12)"
+                              className={`flex-1 px-3.5 py-2 rounded-xl bg-[#334155] border text-[#F8FAFC] placeholder-[#94A3B8] text-sm outline-none transition-all ${
+                                isOver12 ? 'border-red-500 focus:border-red-400' : 'border-[#334155] focus:border-[#FF8A00]'
+                              }`}
+                              required
+                            />
+                          </div>
+                          {isOver12 && (
+                            <p className="text-[11px] text-red-400 font-semibold pl-9">
+                              ⚠️ Age exceeds 12 years. Section F is strictly for children 12 and below. Teenagers (13+) must fill an independent registration form.
+                            </p>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}

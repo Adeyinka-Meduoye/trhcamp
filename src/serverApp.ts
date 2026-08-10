@@ -132,6 +132,11 @@ const generatePassSvg = (attendee: any, qrDataUri: string) => {
   <rect x="210" y="366" width="160" height="30" rx="8" fill="#065F46" stroke="#10B981"/>
   <text x="290" y="385" fill="#34D399" font-family="system-ui, -apple-system, sans-serif" font-size="10" font-weight="bold" text-anchor="middle">Payment: ${payment}</text>
 
+  ${attendee.hasMedicalCondition ? `
+  <rect x="40" y="402" width="330" height="24" rx="6" fill="#7F1D1D" stroke="#EF4444" stroke-width="1"/>
+  <text x="52" y="418" fill="#FCA5A5" font-family="system-ui, -apple-system, sans-serif" font-size="9" font-weight="bold">🚨 MEDICAL ALERT: ${(attendee.medicalDetails || 'Condition Flagged').slice(0, 38)}</text>
+  ` : ''}
+
   <!-- QR Code Box Right -->
   <rect x="530" y="140" width="230" height="230" rx="16" fill="#1E293B" stroke="#FF8A00" stroke-width="2"/>
   <rect x="565" y="158" width="160" height="160" rx="10" fill="#FFFFFF"/>

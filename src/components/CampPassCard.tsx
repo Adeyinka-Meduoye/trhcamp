@@ -283,6 +283,23 @@ export const CampPassCard: React.FC<CampPassCardProps> = ({
                   {attendee.paymentReceiptRef || 'Not provided'}
                 </p>
               </div>
+
+              {attendee.hasMedicalCondition && (
+                <div className="col-span-2 p-3 rounded-xl bg-red-950/60 border border-red-500/50 space-y-1">
+                  <div className="flex items-center gap-1.5 text-red-400 font-extrabold text-xs uppercase tracking-wider">
+                    <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
+                    <span>Medical Alert Flagged</span>
+                  </div>
+                  <p className="text-red-200 font-semibold text-xs leading-snug">
+                    {attendee.medicalDetails || 'Medical condition on record.'}
+                  </p>
+                  {attendee.isTakingMedication && attendee.medicationDetails && (
+                    <p className="text-red-300/80 text-[11px]">
+                      Medication: {attendee.medicationDetails}
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="flex flex-wrap gap-2 pt-1">
@@ -349,7 +366,7 @@ export const CampPassCard: React.FC<CampPassCardProps> = ({
               SCAN TO VERIFY PASS
             </span>
             <p className="text-[11px] text-[#94A3B8] leading-tight">
-              Scan with phone camera or present to TRH Information desk at arrival for instant pass verification.
+              Present to TRH Information desk at arrival for instant scanning and pass verification.
             </p>
           </div>
         </div>
