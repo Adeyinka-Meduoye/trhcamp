@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Attendee, CommitteeName, PaymentStatus } from '../types';
 import { CAMP_DETAILS } from '../data/campData';
+import { DailyAttendanceTracker } from './DailyAttendanceTracker';
 import {
   ShieldAlert,
   Search,
@@ -26,6 +27,8 @@ import {
   Loader2,
   X,
   Baby,
+  Calendar,
+  CalendarCheck2,
 } from 'lucide-react';
 
 const ADMIN_USERNAMES = [
@@ -71,6 +74,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
 
   // Notice when unauthorized role tries to delete
   const [deleteRestrictedNotice, setDeleteRestrictedNotice] = useState<string | null>(null);
+
+  const [activeAdminTab, setActiveAdminTab] = useState<'registry' | 'daily_attendance'>('registry');
 
   const [searchQuery, setSearchQuery] = useState('');
   const [filterPayment, setFilterPayment] = useState<string>('all');
@@ -542,26 +547,70 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
           Manage registered camp participants, confirm ₦1,000 fee payments, monitor sleepover accommodation counts, track medical alerts, and export data.
         </p>
 
-        {/* Action bar */}
-        <div className="flex flex-wrap items-center gap-3 pt-2">
-          <button
-            onClick={() => setShowAddModal(true)}
-            className="px-4 py-2.5 rounded-xl bg-[#FF8A00] hover:bg-[#E85B00] text-[#0F172A] font-extrabold text-xs sm:text-sm flex items-center gap-2 cursor-pointer shadow"
-          >
-            <UserPlus className="w-4 h-4 text-[#0F172A]" />
-            <span>Add Walk-in Attendee</span>
-          </button>
+        {/* Action bar & View Tabs */}
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+          {/* Main Module Tabs */}
+          <div className="flex flex-wrap items-center gap-2 bg-[#0F172A] p-1.5 rounded-2xl border border-[#334155]">
+            <button
+              type="button"
+              onClick={() => setActiveAdminTab('registry')}
+              className={`px-4 py-2 rounded-xl text-xs font-extrabold flex items-center gap-2 transition-all cursor-pointer ${
+                activeAdminTab === 'registry'
+                  ? 'bg-[#FF8A00] text-[#0F172A] shadow-md'
+                  : 'text-[#94A3B8] hover:text-[#F8FAFC] hover:bg-[#1E293B]'
+              }`}
+            >
+              <Users className="w-4 h-4" />
+              <span>Registry & Financial Verification</span>
+            </button>
 
-          <button
-            onClick={handleExportCSV}
-            className="px-4 py-2.5 rounded-xl bg-[#334155] hover:bg-[#0F172A] text-[#F8FAFC] font-semibold text-xs sm:text-sm flex items-center gap-2 border border-[#334155] cursor-pointer"
-          >
-            <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
-            <span>Export CSV</span>
-          </button>
+            <button
+              type="button"
+              onClick={() => setActiveAdminTab('daily_attendance')}
+              className={`px-4 py-2 rounded-xl text-xs font-extrabold flex items-center gap-2 transition-all cursor-pointer ${
+                activeAdminTab === 'daily_attendance'
+                  ? 'bg-purple-600 text-white shadow-md'
+                  : 'text-purple-300 hover:text-white hover:bg-purple-950/50'
+              }`}
+            >
+              <CalendarCheck2 className="w-4 h-4" />
+              <span>Daily Camp Attendance (4 Activities / 8 Days)</span>
+              <span className="text-[10px] bg-purple-900 px-1.5 py-0.2 rounded-full border border-purple-400/40">
+                New
+              </span>
+            </button>
+          </div>
+
+          {activeAdminTab === 'registry' && (
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                onClick={() => setShowAddModal(true)}
+                className="px-4 py-2.5 rounded-xl bg-[#FF8A00] hover:bg-[#E85B00] text-[#0F172A] font-extrabold text-xs sm:text-sm flex items-center gap-2 cursor-pointer shadow"
+              >
+                <UserPlus className="w-4 h-4 text-[#0F172A]" />
+                <span>Add Walk-in Attendee</span>
+              </button>
+
+              <button
+                onClick={handleExportCSV}
+                className="px-4 py-2.5 rounded-xl bg-[#334155] hover:bg-[#0F172A] text-[#F8FAFC] font-semibold text-xs sm:text-sm flex items-center gap-2 border border-[#334155] cursor-pointer"
+              >
+                <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
+                <span>Export CSV</span>
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
+      {activeAdminTab === 'daily_attendance' ? (
+        <DailyAttendanceTracker
+          attendees={attendees}
+          onUpdateAttendee={onUpdateAttendee}
+          authenticatedRole={authenticatedRole}
+        />
+      ) : (
+        <>
       {/* KPI Stats Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
         <div className="bg-[#1E293B] rounded-2xl p-4 border border-[#334155] shadow-sm space-y-1">
@@ -952,6 +1001,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
           </table>
         </div>
       </div>
+      </>
+      )}
 
       {/* Restricted Delete Notice Modal */}
       {deleteRestrictedNotice && (

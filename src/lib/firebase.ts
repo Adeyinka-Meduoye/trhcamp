@@ -160,3 +160,45 @@ export const deleteExpectationFromFirestore = async (postId: string): Promise<vo
     throw err;
   }
 };
+
+// --- GLOBAL WALL SETTINGS HELPERS ---
+const SETTINGS_COLLECTION = 'settings';
+const WALL_SETTINGS_DOC = 'wall_settings';
+
+export interface WallSettings {
+  maskAllNames: boolean;
+  individuallyToggledIds: string[];
+}
+
+export const subscribeWallSettings = (callback: (settings: WallSettings) => void) => {
+  const docRef = doc(db, SETTINGS_COLLECTION, WALL_SETTINGS_DOC);
+
+  return onSnapshot(
+    docRef,
+    (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        callback({
+          maskAllNames: Boolean(data.maskAllNames),
+          individuallyToggledIds: Array.isArray(data.individuallyToggledIds) ? data.individuallyToggledIds : [],
+        });
+      } else {
+        callback({ maskAllNames: false, individuallyToggledIds: [] });
+      }
+    },
+    (err) => {
+      console.warn('Firestore wall settings snapshot listener error:', err.message);
+    }
+  );
+};
+
+export const updateWallSettingsInFirestore = async (settings: Partial<WallSettings>): Promise<void> => {
+  try {
+    const docRef = doc(db, SETTINGS_COLLECTION, WALL_SETTINGS_DOC);
+    await setDoc(docRef, settings, { merge: true });
+  } catch (err) {
+    console.error('Failed to update wall settings in Firestore:', err);
+    throw err;
+  }
+};
+

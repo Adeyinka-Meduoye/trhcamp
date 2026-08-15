@@ -1,4 +1,4 @@
-import { Attendee, CommitteeInfo, ExpectationPost, ScheduleItem } from '../types';
+import { Attendee, CommitteeInfo, ExpectationPost, ScheduleItem, CampActivityDef, CampDayDef } from '../types';
 import trhLogoImg from '../assets/images/trh_camp_logo_1785335253249.png';
 
 /**
@@ -265,4 +265,52 @@ export const COMMITTEES: CommitteeInfo[] = [
 export const INITIAL_ATTENDEES: Attendee[] = [];
 
 export const INITIAL_EXPECTATIONS: ExpectationPost[] = [];
+
+/**
+ * 4 MAJOR DAILY CAMP ACTIVITIES FOR ATTENDANCE TRACKING
+ */
+export const MAJOR_DAILY_ACTIVITIES: CampActivityDef[] = [
+  {
+    key: 'prayerWalk_5am',
+    time: '5:00 AM',
+    name: 'Prayer Walk',
+    iconName: 'Footprints',
+    description: '5:00 AM — Morning prayer walk surrounding the camp premises with intercession and worship.',
+  },
+  {
+    key: 'teachingPrayer_12pm',
+    time: '12:00 PM',
+    name: 'Teaching & Prayer',
+    iconName: 'BookOpen',
+    description: '12:00 PM – 3:00 PM — Apostolic teaching, prophetic prayer, and corporate fast breaking.',
+  },
+  {
+    key: 'bibleStudy_6pm',
+    time: '6:00 PM',
+    name: 'Bible Study',
+    iconName: 'Users',
+    description: '6:00 PM – 7:30 PM — Interactive Bible study groups on Evidence & Proof of Victory.',
+  },
+  {
+    key: 'midnightWorship_11pm',
+    time: '11:00 PM',
+    name: 'Midnight Worship',
+    iconName: 'Moon',
+    description: '11:00 PM – 12:30 AM — High midnight worship, prophetic songs, and breaking of spiritual strongholds.',
+  },
+];
+
+/**
+ * 8-DAY CAMP TIMELINE (AUG 23 - AUG 30, 2026)
+ */
+export const CAMP_DAYS: CampDayDef[] = [
+  { dayNumber: 1, dateStr: '2026-08-23', label: 'Day 1 — Sun, Aug 23 (Arrival & Opening)', isArrivalDay: true },
+  { dayNumber: 2, dateStr: '2026-08-24', label: 'Day 2 — Mon, Aug 24' },
+  { dayNumber: 3, dateStr: '2026-08-25', label: 'Day 3 — Tue, Aug 25' },
+  { dayNumber: 4, dateStr: '2026-08-26', label: 'Day 4 — Wed, Aug 26' },
+  { dayNumber: 5, dateStr: '2026-08-27', label: 'Day 5 — Thu, Aug 27' },
+  { dayNumber: 6, dateStr: '2026-08-28', label: 'Day 6 — Fri, Aug 28' },
+  { dayNumber: 7, dateStr: '2026-08-29', label: 'Day 7 — Sat, Aug 29' },
+  { dayNumber: 8, dateStr: '2026-08-30', label: 'Day 8 — Sun, Aug 30 (Thanksgiving & Departure)', isDepartureDay: true },
+];
 

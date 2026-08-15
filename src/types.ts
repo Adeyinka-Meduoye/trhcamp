@@ -67,6 +67,33 @@ export interface Attendee {
   isCheckedIn?: boolean;
   checkedInAt?: string;
   checkedInBy?: string;
+  dailyAttendance?: Record<string, {
+    marked: boolean;
+    markedAt?: string;
+    markedBy?: string;
+  }>;
+}
+
+export interface DailyAttendanceRecord {
+  marked: boolean;
+  markedAt?: string;
+  markedBy?: string;
+}
+
+export interface CampActivityDef {
+  key: string;
+  time: string;
+  name: string;
+  iconName: string;
+  description: string;
+}
+
+export interface CampDayDef {
+  dayNumber: number;
+  dateStr: string;
+  label: string;
+  isArrivalDay?: boolean;
+  isDepartureDay?: boolean;
 }
 
 export interface ScheduleItem {
@@ -90,11 +117,13 @@ export interface CommitteeInfo {
 export interface ExpectationPost {
   id: string;
   authorName: string;
+  actualAuthorName?: string;
   isAnonymous: boolean;
   category: 'Spiritual Growth' | 'Healing & Health' | 'Breakthrough' | 'Family & Relationships' | 'Ministry & Service' | 'Financial & Career' | 'General';
   message: string;
   amenCount: number;
   createdAt: string;
+  visibility?: 'public' | 'private';
 }
 
 

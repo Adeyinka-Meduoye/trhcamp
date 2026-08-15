@@ -286,6 +286,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
         const expectationPost: ExpectationPost = {
           id: `exp-${Date.now()}`,
           authorName: `${firstName.trim()} ${surname.trim().charAt(0)}.`,
+          actualAuthorName: `${firstName.trim()} ${surname.trim()}`,
           isAnonymous: false,
           category: 'Breakthrough',
           message: expectations.trim(),
@@ -1134,10 +1135,10 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
               <div className="space-y-2">
                 <label className="text-xs font-bold text-[#94A3B8] uppercase tracking-wider block">
                   What are you trusting God for during this camp?{' '}
-                  <span className="text-[#FF8A00] font-normal lowercase">(Optional — share anonymously if you prefer)</span>
+                  <span className="text-[#FF8A00] font-normal lowercase">(Optional)</span>
                 </label>
                 <p className="text-xs text-[#94A3B8]">
-                  Share your specific spiritual prayer desires, healing requests, breakthrough targets, or personal expectations for this 7-day consecration.
+                  Share your specific spiritual prayer desires, healing requests, breakthrough targets, or personal expectations for this 7-day consecration to be shared on the Victory Wall.
                 </p>
                 <textarea
                   value={expectations}
@@ -1147,6 +1148,15 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
                   className="w-full px-4 py-3 rounded-2xl bg-[#334155] border border-[#334155] focus:border-[#FF8A00] text-[#F8FAFC] placeholder-[#94A3B8] text-sm leading-relaxed"
                 />
               </div>
+
+              {expectations.trim() && (
+                <div className="p-3.5 rounded-xl bg-[#1E293B] border border-[#FF8A00]/30 text-xs text-[#94A3B8] flex items-start gap-2.5 animate-fadeIn">
+                  <Flame className="w-4 h-4 text-[#FF8A00] shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-bold text-[#F8FAFC]">Victory Wall Note:</span> Your expectation will be displayed on the Proof of Victory Wall so brothers and sisters can stand in agreement with you in prayer (Amen 🙏).
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}
