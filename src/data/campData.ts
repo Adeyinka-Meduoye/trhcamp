@@ -267,9 +267,23 @@ export const INITIAL_ATTENDEES: Attendee[] = [];
 export const INITIAL_EXPECTATIONS: ExpectationPost[] = [];
 
 /**
- * 4 MAJOR DAILY CAMP ACTIVITIES FOR ATTENDANCE TRACKING
+ * CAMP ATTENDANCE ACTIVITIES DEFINITIONS
+ * - Day 1: Evening session only (Arrival of Camp Participants)
+ * - Days 2 – 7: 4 major daily sessions (5:00 AM, 12:00 PM, 6:00 PM, 11:00 PM)
+ * - Day 8: Morning session only (10:00 AM – 1:00 PM Thanksgiving Morning Service)
  */
-export const MAJOR_DAILY_ACTIVITIES: CampActivityDef[] = [
+
+export const DAY_1_ACTIVITIES: CampActivityDef[] = [
+  {
+    key: 'arrival_evening',
+    time: 'Evening',
+    name: 'Arrival of Camp Participants',
+    iconName: 'Users',
+    description: 'Evening (4:00 PM – 8:00 PM) — Arrival of camp participants, registration check-in, room allocation, and opening welcome.',
+  },
+];
+
+export const STANDARD_DAY_ACTIVITIES: CampActivityDef[] = [
   {
     key: 'prayerWalk_5am',
     time: '5:00 AM',
@@ -300,17 +314,86 @@ export const MAJOR_DAILY_ACTIVITIES: CampActivityDef[] = [
   },
 ];
 
+export const DAY_8_ACTIVITIES: CampActivityDef[] = [
+  {
+    key: 'morningService_10am',
+    time: '10:00 AM – 1:00 PM',
+    name: 'Thanksgiving Morning Service',
+    iconName: 'Sun',
+    description: '10:00 AM – 1:00 PM — Grand Thanksgiving Morning Service, testimonies of evidence, and departure blessings.',
+  },
+];
+
+export const getDayActivities = (dayNumber: number): CampActivityDef[] => {
+  if (dayNumber === 1) return DAY_1_ACTIVITIES;
+  if (dayNumber === 8) return DAY_8_ACTIVITIES;
+  return STANDARD_DAY_ACTIVITIES;
+};
+
+// Standard daily activities alias for general reference
+export const MAJOR_DAILY_ACTIVITIES: CampActivityDef[] = STANDARD_DAY_ACTIVITIES;
+
 /**
  * 8-DAY CAMP TIMELINE (AUG 23 - AUG 30, 2026)
  */
 export const CAMP_DAYS: CampDayDef[] = [
-  { dayNumber: 1, dateStr: '2026-08-23', label: 'Day 1 — Sun, Aug 23 (Arrival & Opening)', isArrivalDay: true },
-  { dayNumber: 2, dateStr: '2026-08-24', label: 'Day 2 — Mon, Aug 24' },
-  { dayNumber: 3, dateStr: '2026-08-25', label: 'Day 3 — Tue, Aug 25' },
-  { dayNumber: 4, dateStr: '2026-08-26', label: 'Day 4 — Wed, Aug 26' },
-  { dayNumber: 5, dateStr: '2026-08-27', label: 'Day 5 — Thu, Aug 27' },
-  { dayNumber: 6, dateStr: '2026-08-28', label: 'Day 6 — Fri, Aug 28' },
-  { dayNumber: 7, dateStr: '2026-08-29', label: 'Day 7 — Sat, Aug 29' },
-  { dayNumber: 8, dateStr: '2026-08-30', label: 'Day 8 — Sun, Aug 30 (Thanksgiving & Departure)', isDepartureDay: true },
+  {
+    dayNumber: 1,
+    dateStr: '2026-08-23',
+    label: 'Day 1 — Sun, Aug 23 (Arrival of Camp Participants)',
+    isArrivalDay: true,
+    activitiesNote: 'Evening Only: Arrival & Check-In',
+    activities: DAY_1_ACTIVITIES,
+  },
+  {
+    dayNumber: 2,
+    dateStr: '2026-08-24',
+    label: 'Day 2 — Mon, Aug 24',
+    activitiesNote: '4 Daily Sessions (5 AM, 12 PM, 6 PM, 11 PM)',
+    activities: STANDARD_DAY_ACTIVITIES,
+  },
+  {
+    dayNumber: 3,
+    dateStr: '2026-08-25',
+    label: 'Day 3 — Tue, Aug 25',
+    activitiesNote: '4 Daily Sessions (5 AM, 12 PM, 6 PM, 11 PM)',
+    activities: STANDARD_DAY_ACTIVITIES,
+  },
+  {
+    dayNumber: 4,
+    dateStr: '2026-08-26',
+    label: 'Day 4 — Wed, Aug 26',
+    activitiesNote: '4 Daily Sessions (5 AM, 12 PM, 6 PM, 11 PM)',
+    activities: STANDARD_DAY_ACTIVITIES,
+  },
+  {
+    dayNumber: 5,
+    dateStr: '2026-08-27',
+    label: 'Day 5 — Thu, Aug 27',
+    activitiesNote: '4 Daily Sessions (5 AM, 12 PM, 6 PM, 11 PM)',
+    activities: STANDARD_DAY_ACTIVITIES,
+  },
+  {
+    dayNumber: 6,
+    dateStr: '2026-08-28',
+    label: 'Day 6 — Fri, Aug 28',
+    activitiesNote: '4 Daily Sessions (5 AM, 12 PM, 6 PM, 11 PM)',
+    activities: STANDARD_DAY_ACTIVITIES,
+  },
+  {
+    dayNumber: 7,
+    dateStr: '2026-08-29',
+    label: 'Day 7 — Sat, Aug 29',
+    activitiesNote: '4 Daily Sessions (5 AM, 12 PM, 6 PM, 11 PM)',
+    activities: STANDARD_DAY_ACTIVITIES,
+  },
+  {
+    dayNumber: 8,
+    dateStr: '2026-08-30',
+    label: 'Day 8 — Sun, Aug 30 (Thanksgiving & Departure)',
+    isDepartureDay: true,
+    activitiesNote: 'Morning Service Only (10:00 AM – 1:00 PM)',
+    activities: DAY_8_ACTIVITIES,
+  },
 ];
 

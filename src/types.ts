@@ -94,6 +94,8 @@ export interface CampDayDef {
   label: string;
   isArrivalDay?: boolean;
   isDepartureDay?: boolean;
+  activitiesNote?: string;
+  activities?: CampActivityDef[];
 }
 
 export interface ScheduleItem {

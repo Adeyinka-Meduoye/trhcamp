@@ -1,7 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Attendee, CommitteeName } from '../types';
-import { CAMP_DETAILS, MAJOR_DAILY_ACTIVITIES, CAMP_DAYS } from '../data/campData';
+import { Attendee, CommitteeName, CampActivityDef } from '../types';
+import { CAMP_DETAILS, MAJOR_DAILY_ACTIVITIES, CAMP_DAYS, getDayActivities } from '../data/campData';
 import {
   Calendar,
   Clock,
@@ -27,6 +27,7 @@ import {
   Building2,
   Bed,
   CheckCheck,
+  DoorOpen,
 } from 'lucide-react';
 
 interface DailyAttendanceTrackerProps {
@@ -40,10 +41,34 @@ export const DailyAttendanceTracker: React.FC<DailyAttendanceTrackerProps> = ({
   onUpdateAttendee,
   authenticatedRole,
 }) => {
-  // Active selected camp day
+  // Active selected camp day (Defaults to Day 1)
   const [selectedDayNumber, setSelectedDayNumber] = useState<number>(1);
-  // Active activity tab: 'all' (Matrix View) or specific activity key
-  const [selectedActivityKey, setSelectedActivityKey] = useState<string>('prayerWalk_5am');
+
+  // Active day definition
+  const currentDayDef = useMemo(() => {
+    return CAMP_DAYS.find((d) => d.dayNumber === selectedDayNumber) || CAMP_DAYS[0];
+  }, [selectedDayNumber]);
+
+  // Current day's activities (Day 1: Evening only, Day 2-7: 4 activities, Day 8: 10am-1pm Morning Service only)
+  const currentDayActivities = useMemo(() => {
+    return getDayActivities(selectedDayNumber);
+  }, [selectedDayNumber]);
+
+  // Active activity tab: 'matrix' (Matrix View) or specific activity key
+  const [selectedActivityKey, setSelectedActivityKey] = useState<string>(() => {
+    const acts = getDayActivities(1);
+    return acts[0]?.key || 'arrival_evening';
+  });
+
+  // Ensure active activity tab is valid for the selected day when changing days
+  useEffect(() => {
+    if (selectedActivityKey !== 'matrix') {
+      const existsInCurrentDay = currentDayActivities.some((a) => a.key === selectedActivityKey);
+      if (!existsInCurrentDay) {
+        setSelectedActivityKey(currentDayActivities[0]?.key || 'arrival_evening');
+      }
+    }
+  }, [selectedDayNumber, currentDayActivities, selectedActivityKey]);
 
   // Search & Filters
   const [searchQuery, setSearchQuery] = useState('');
@@ -62,15 +87,10 @@ export const DailyAttendanceTracker: React.FC<DailyAttendanceTrackerProps> = ({
   // Selected attendee for detailed timeline modal
   const [selectedAttendeeForTimeline, setSelectedAttendeeForTimeline] = useState<Attendee | null>(null);
 
-  // Active day definition
-  const currentDayDef = useMemo(() => {
-    return CAMP_DAYS.find((d) => d.dayNumber === selectedDayNumber) || CAMP_DAYS[0];
-  }, [selectedDayNumber]);
-
   // Active activity definition
   const currentActivityDef = useMemo(() => {
-    return MAJOR_DAILY_ACTIVITIES.find((a) => a.key === selectedActivityKey) || MAJOR_DAILY_ACTIVITIES[0];
-  }, [selectedActivityKey]);
+    return currentDayActivities.find((a) => a.key === selectedActivityKey) || currentDayActivities[0];
+  }, [currentDayActivities, selectedActivityKey]);
 
   // Helper to generate key for attendance map: e.g. "2026-08-24_prayerWalk_5am"
   const getAttendanceKey = (dateStr: string, actKey: string) => `${dateStr}_${actKey}`;
@@ -299,20 +319,22 @@ export const DailyAttendanceTracker: React.FC<DailyAttendanceTrackerProps> = ({
     };
   }, [attendees, currentDayDef.dateStr, currentActivityDef.key]);
 
-  // Overall attendance statistics for an individual attendee
+  // Overall attendance statistics for an individual attendee across all 26 camp sessions
   const getAttendeeAttendanceSummary = (attendee: Attendee) => {
-    let totalSessions = CAMP_DAYS.length * MAJOR_DAILY_ACTIVITIES.length; // 8 * 4 = 32
+    let totalSessions = 0;
     let attendedCount = 0;
 
     CAMP_DAYS.forEach((d) => {
-      MAJOR_DAILY_ACTIVITIES.forEach((act) => {
+      const dayActs = getDayActivities(d.dayNumber);
+      totalSessions += dayActs.length;
+      dayActs.forEach((act) => {
         if (isAttendeePresent(attendee, d.dateStr, act.key)) {
           attendedCount++;
         }
       });
     });
 
-    const rate = Math.round((attendedCount / totalSessions) * 100);
+    const rate = totalSessions > 0 ? Math.round((attendedCount / totalSessions) * 100) : 0;
     return { attendedCount, totalSessions, rate };
   };
 
@@ -323,6 +345,12 @@ export const DailyAttendanceTracker: React.FC<DailyAttendanceTrackerProps> = ({
       return;
     }
 
+    // Compute total sessions dynamically (Day 1: 1 + Days 2-7: 24 + Day 8: 1 = 26)
+    let totalCampSessions = 0;
+    CAMP_DAYS.forEach((d) => {
+      totalCampSessions += getDayActivities(d.dayNumber).length;
+    });
+
     const headers = [
       'Reg Number',
       'Full Name',
@@ -330,14 +358,15 @@ export const DailyAttendanceTracker: React.FC<DailyAttendanceTrackerProps> = ({
       'Gender',
       'Department',
       'Accommodation (Sleepover)',
-      'Total Sessions Attended (Out of 32)',
+      `Total Sessions Attended (Out of ${totalCampSessions})`,
       'Attendance Percentage',
     ];
 
-    // Add 32 session columns
+    // Add dynamic session columns for each day
     CAMP_DAYS.forEach((d) => {
-      MAJOR_DAILY_ACTIVITIES.forEach((act) => {
-        headers.push(`Day ${d.dayNumber} (${act.time} ${act.name})`);
+      const dayActs = getDayActivities(d.dayNumber);
+      dayActs.forEach((act) => {
+        headers.push(`Day ${d.dayNumber} (${act.time} - ${act.name})`);
       });
     });
 
@@ -355,7 +384,8 @@ export const DailyAttendanceTracker: React.FC<DailyAttendanceTrackerProps> = ({
       ];
 
       CAMP_DAYS.forEach((d) => {
-        MAJOR_DAILY_ACTIVITIES.forEach((act) => {
+        const dayActs = getDayActivities(d.dayNumber);
+        dayActs.forEach((act) => {
           const isPres = isAttendeePresent(a, d.dateStr, act.key);
           row.push(`"${isPres ? 'PRESENT' : 'ABSENT'}"`);
         });
@@ -391,7 +421,7 @@ export const DailyAttendanceTracker: React.FC<DailyAttendanceTrackerProps> = ({
                 Camp Timeline (August 23 – 30, 2026)
               </h3>
               <p className="text-xs text-[#94A3B8]">
-                Select a camp day to mark and monitor daily attendance across all 4 major activities.
+                Select a camp day to mark and monitor daily attendance. Day 1: Evening Arrival • Days 2–7: 4 Daily Sessions • Day 8: Morning Thanksgiving (10am–1pm).
               </p>
             </div>
           </div>
@@ -409,13 +439,14 @@ export const DailyAttendanceTracker: React.FC<DailyAttendanceTrackerProps> = ({
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2">
           {CAMP_DAYS.map((day) => {
             const isSelected = day.dayNumber === selectedDayNumber;
+            const dayActs = getDayActivities(day.dayNumber);
 
-            // Calculate attendance rate for this day across all 4 activities
+            // Calculate attendance rate for this day across its scheduled activities
             let dayTotalPresent = 0;
-            let dayMaxPossible = attendees.length * 4;
+            let dayMaxPossible = attendees.length * dayActs.length;
             if (dayMaxPossible > 0) {
               attendees.forEach((a) => {
-                MAJOR_DAILY_ACTIVITIES.forEach((act) => {
+                dayActs.forEach((act) => {
                   if (isAttendeePresent(a, day.dateStr, act.key)) dayTotalPresent++;
                 });
               });
@@ -451,7 +482,14 @@ export const DailyAttendanceTracker: React.FC<DailyAttendanceTrackerProps> = ({
 
                 <div>
                   <p className={`text-xs font-extrabold ${isSelected ? 'text-[#0F172A]' : 'text-[#F8FAFC]'}`}>
-                    {day.label.split('—')[1]?.trim() || day.label}
+                    {day.dayNumber === 1
+                      ? 'Sun, Aug 23 (Arrival)'
+                      : day.dayNumber === 8
+                      ? 'Sun, Aug 30 (Thanksgiving)'
+                      : day.label.split('—')[1]?.trim() || day.label}
+                  </p>
+                  <p className={`text-[9px] font-mono opacity-80 ${isSelected ? 'text-[#0F172A]' : 'text-[#94A3B8]'}`}>
+                    {dayActs.length === 1 ? '1 Session' : '4 Sessions'}
                   </p>
                 </div>
 
@@ -465,7 +503,7 @@ export const DailyAttendanceTracker: React.FC<DailyAttendanceTrackerProps> = ({
         </div>
       </div>
 
-      {/* 4 Major Daily Activities Tabs */}
+      {/* Daily Activities Tabs */}
       <div className="bg-[#1E293B] rounded-3xl p-5 sm:p-6 border border-[#334155] shadow-lg space-y-5">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#334155] pb-4">
           <div>
@@ -475,14 +513,20 @@ export const DailyAttendanceTracker: React.FC<DailyAttendanceTrackerProps> = ({
             <h3 className="text-xl sm:text-2xl font-black text-[#F8FAFC] tracking-tight flex items-center gap-2">
               <span>Daily Activity Sessions</span>
               <span className="text-xs font-mono bg-purple-950/60 text-purple-300 border border-purple-500/40 px-2.5 py-0.5 rounded-full font-bold">
-                4 Key Activities Daily
+                {selectedDayNumber === 1
+                  ? 'Evening Session Only: Arrival of Camp Participants'
+                  : selectedDayNumber === 8
+                  ? 'Morning Service Only (10:00 AM – 1:00 PM)'
+                  : '4 Key Activities Daily'}
               </span>
             </h3>
           </div>
 
           <div className="flex flex-wrap gap-1.5 bg-[#0F172A] p-1.5 rounded-2xl border border-[#334155]">
-            {MAJOR_DAILY_ACTIVITIES.map((activity) => {
+            {currentDayActivities.map((activity) => {
               const isSelected = selectedActivityKey === activity.key;
+              const isArrival = activity.key === 'arrival_evening';
+              const isMorningService = activity.key === 'morningService_10am';
               const is5am = activity.key === 'prayerWalk_5am';
               const is12pm = activity.key === 'teachingPrayer_12pm';
               const is6pm = activity.key === 'bibleStudy_6pm';
@@ -499,27 +543,31 @@ export const DailyAttendanceTracker: React.FC<DailyAttendanceTrackerProps> = ({
                       : 'text-[#94A3B8] hover:bg-[#1E293B] hover:text-[#F8FAFC]'
                   }`}
                 >
+                  {isArrival && <Users className="w-3.5 h-3.5" />}
+                  {isMorningService && <Sun className="w-3.5 h-3.5" />}
                   {is5am && <Footprints className="w-3.5 h-3.5" />}
                   {is12pm && <BookOpen className="w-3.5 h-3.5" />}
                   {is6pm && <Users className="w-3.5 h-3.5" />}
                   {is11pm && <Moon className="w-3.5 h-3.5" />}
-                  <span>{activity.time} {activity.name}</span>
+                  <span>{activity.time} — {activity.name}</span>
                 </button>
               );
             })}
 
-            <button
-              type="button"
-              onClick={() => setSelectedActivityKey('matrix')}
-              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-                selectedActivityKey === 'matrix'
-                  ? 'bg-purple-600 text-white shadow font-black'
-                  : 'text-purple-300 hover:bg-[#1E293B]'
-              }`}
-            >
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Matrix View (All 4)</span>
-            </button>
+            {currentDayActivities.length > 1 && (
+              <button
+                type="button"
+                onClick={() => setSelectedActivityKey('matrix')}
+                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                  selectedActivityKey === 'matrix'
+                    ? 'bg-purple-600 text-white shadow font-black'
+                    : 'text-purple-300 hover:bg-[#1E293B]'
+                }`}
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Matrix View (All {currentDayActivities.length})</span>
+              </button>
+            )}
           </div>
         </div>
 
@@ -826,12 +874,12 @@ export const DailyAttendanceTracker: React.FC<DailyAttendanceTrackerProps> = ({
               </tbody>
             </table>
           ) : (
-            /* MATRIX VIEW (ALL 4 MAJOR ACTIVITIES SIDE-BY-SIDE) */
+            /* MATRIX VIEW (ALL ACTIVITIES FOR THE SELECTED DAY SIDE-BY-SIDE) */
             <table className="w-full text-left text-xs border-collapse">
               <thead className="bg-[#1E293B] text-[#94A3B8] font-mono uppercase text-[10px] border-b border-[#334155]">
                 <tr>
                   <th className="py-3 px-4">Attendee Details</th>
-                  {MAJOR_DAILY_ACTIVITIES.map((act) => (
+                  {currentDayActivities.map((act) => (
                     <th key={act.key} className="py-3 px-2 text-center">
                       <span className="block text-[#F8FAFC] font-bold">{act.time}</span>
                       <span className="text-[9px] text-[#FF8A00]">{act.name}</span>
@@ -844,7 +892,7 @@ export const DailyAttendanceTracker: React.FC<DailyAttendanceTrackerProps> = ({
               <tbody className="divide-y divide-[#334155]/60 text-[#F8FAFC]">
                 {filteredAttendees.map((att) => {
                   let dailyScore = 0;
-                  MAJOR_DAILY_ACTIVITIES.forEach((act) => {
+                  currentDayActivities.forEach((act) => {
                     if (isAttendeePresent(att, currentDayDef.dateStr, act.key)) dailyScore++;
                   });
                   const { attendedCount, totalSessions, rate } = getAttendeeAttendanceSummary(att);
@@ -864,8 +912,8 @@ export const DailyAttendanceTracker: React.FC<DailyAttendanceTrackerProps> = ({
                         </span>
                       </td>
 
-                      {/* 4 Interactive Columns */}
-                      {MAJOR_DAILY_ACTIVITIES.map((act) => {
+                      {/* Day's Interactive Activity Columns */}
+                      {currentDayActivities.map((act) => {
                         const isPres = isAttendeePresent(att, currentDayDef.dateStr, act.key);
                         return (
                           <td key={act.key} className="py-3 px-2 text-center">
@@ -888,14 +936,14 @@ export const DailyAttendanceTracker: React.FC<DailyAttendanceTrackerProps> = ({
                       <td className="py-3 px-3 text-center font-mono font-bold text-xs">
                         <span
                           className={`px-2 py-0.5 rounded ${
-                            dailyScore === 4
+                            dailyScore === currentDayActivities.length
                               ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/40'
                               : dailyScore > 0
                               ? 'bg-amber-950 text-amber-300 border border-amber-500/40'
                               : 'bg-slate-800 text-slate-400'
                           }`}
                         >
-                          {dailyScore} / 4
+                          {dailyScore} / {currentDayActivities.length}
                         </span>
                       </td>
 
@@ -993,6 +1041,8 @@ export const DailyAttendanceTracker: React.FC<DailyAttendanceTrackerProps> = ({
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {CAMP_DAYS.map((d) => {
+                  const dayActs = getDayActivities(d.dayNumber);
+
                   return (
                     <div
                       key={d.dayNumber}
@@ -1007,8 +1057,8 @@ export const DailyAttendanceTracker: React.FC<DailyAttendanceTrackerProps> = ({
                         </span>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-2">
-                        {MAJOR_DAILY_ACTIVITIES.map((act) => {
+                      <div className={dayActs.length === 1 ? 'grid grid-cols-1 gap-2' : 'grid grid-cols-2 gap-2'}>
+                        {dayActs.map((act) => {
                           const isPres = isAttendeePresent(selectedAttendeeForTimeline, d.dateStr, act.key);
                           const rec = getAttendanceRecord(selectedAttendeeForTimeline, d.dateStr, act.key);
 
