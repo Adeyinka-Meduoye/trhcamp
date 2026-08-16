@@ -134,25 +134,70 @@ export const DailyAttendanceTracker: React.FC<DailyAttendanceTrackerProps> = ({
     }
   };
 
-  // Quick Pass Code / Phone Scanner Submit
+  // Quick Pass Code / Phone / Full Name Scanner Submit
   const handleQuickScanSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const query = quickScanInput.trim().toLowerCase();
-    if (!query) return;
+    const rawInput = quickScanInput.trim();
+    if (!rawInput) return;
+
+    const query = rawInput.toLowerCase();
+    const normalizedQuery = query.replace(/\s+/g, ' ');
+    const queryDigits = rawInput.replace(/[^0-9]/g, '');
 
     const matched = attendees.find((a) => {
-      return (
-        a.regNumber.toLowerCase() === query ||
-        a.phone.replace(/[^0-9]/g, '').includes(query.replace(/[^0-9]/g, '')) ||
-        `${a.firstName} ${a.surname}`.toLowerCase() === query ||
-        a.surname.toLowerCase() === query
-      );
+      const regLower = (a.regNumber || '').toLowerCase().trim();
+      const phoneDigits = (a.phone || '').replace(/[^0-9]/g, '');
+      const firstName = (a.firstName || '').toLowerCase().trim();
+      const surname = (a.surname || '').toLowerCase().trim();
+      const otherNames = (a.otherNames || '').toLowerCase().trim();
+
+      // 1. Exact Reg Number match or partial prefix match (e.g., TRH-CAMP-2026-001)
+      if (regLower === query) return true;
+      if (query.length >= 3 && regLower.includes(query)) return true;
+
+      // 2. Phone Match: ONLY check if the query actually contains digits (at least 4 digits to prevent false positives)
+      if (queryDigits.length >= 4 && phoneDigits.length >= 4) {
+        if (phoneDigits.includes(queryDigits)) return true;
+      }
+
+      // 3. Name Match combinations
+      const fullName1 = `${firstName} ${surname}`.trim();
+      const fullName2 = `${surname} ${firstName}`.trim();
+      const fullNameWithOther1 = `${firstName} ${otherNames} ${surname}`.replace(/\s+/g, ' ').trim();
+      const fullNameWithOther2 = `${surname} ${firstName} ${otherNames}`.replace(/\s+/g, ' ').trim();
+      const fullNameWithOther3 = `${firstName} ${surname} ${otherNames}`.replace(/\s+/g, ' ').trim();
+
+      // Exact name match
+      if (
+        fullName1 === normalizedQuery ||
+        fullName2 === normalizedQuery ||
+        fullNameWithOther1 === normalizedQuery ||
+        fullNameWithOther2 === normalizedQuery ||
+        fullNameWithOther3 === normalizedQuery ||
+        firstName === normalizedQuery ||
+        surname === normalizedQuery ||
+        (otherNames && otherNames === normalizedQuery)
+      ) {
+        return true;
+      }
+
+      // Multi-word name containment (e.g., "Adeyinka Meduoye")
+      const queryWords = normalizedQuery.split(' ').filter(Boolean);
+      const combinedAllNames = `${firstName} ${otherNames} ${surname}`.toLowerCase();
+      if (
+        queryWords.length >= 2 &&
+        queryWords.every((word) => combinedAllNames.includes(word))
+      ) {
+        return true;
+      }
+
+      return false;
     });
 
     if (!matched) {
       setQuickScanFeedback({
         success: false,
-        message: `No attendee found matching "${quickScanInput}". Verify registration number or phone.`,
+        message: `No attendee found matching "${quickScanInput}". Try entering their Full Name, Phone Number, or Registration Number.`,
       });
       return;
     }
@@ -164,7 +209,7 @@ export const DailyAttendanceTracker: React.FC<DailyAttendanceTrackerProps> = ({
       setQuickScanFeedback({
         success: true,
         message: `Already marked present for ${currentActivityDef.name}!`,
-        attendeeName: `${matched.firstName} ${matched.surname} (${matched.regNumber})`,
+        attendeeName: `${matched.surname} ${matched.firstName} (${matched.regNumber})`,
       });
     } else {
       const updatedDailyAttendance = {
@@ -181,8 +226,8 @@ export const DailyAttendanceTracker: React.FC<DailyAttendanceTrackerProps> = ({
 
       setQuickScanFeedback({
         success: true,
-        message: `Successfully marked PRESENT for ${currentActivityDef.name}!`,
-        attendeeName: `${matched.firstName} ${matched.surname} (${matched.regNumber})`,
+        message: `Successfully marked PRESENT for ${currentActivityDef.name}! (${currentDayDef.label.split('—')[0].trim()})`,
+        attendeeName: `${matched.surname} ${matched.firstName} (${matched.regNumber})`,
       });
     }
 
@@ -248,14 +293,22 @@ export const DailyAttendanceTracker: React.FC<DailyAttendanceTrackerProps> = ({
   const filteredAttendees = useMemo(() => {
     return attendees.filter((a) => {
       // Search
-      const searchLower = searchQuery.toLowerCase();
+      const searchLower = searchQuery.toLowerCase().trim();
+      const firstName = (a.firstName || '').toLowerCase();
+      const surname = (a.surname || '').toLowerCase();
+      const otherNames = (a.otherNames || '').toLowerCase();
+      const combinedName = `${firstName} ${otherNames} ${surname}`;
+      const reversedName = `${surname} ${firstName} ${otherNames}`;
+
       const matchesSearch =
-        searchQuery === '' ||
-        a.firstName.toLowerCase().includes(searchLower) ||
-        a.surname.toLowerCase().includes(searchLower) ||
-        (a.otherNames && a.otherNames.toLowerCase().includes(searchLower)) ||
+        searchQuery.trim() === '' ||
+        firstName.includes(searchLower) ||
+        surname.includes(searchLower) ||
+        otherNames.includes(searchLower) ||
+        combinedName.includes(searchLower) ||
+        reversedName.includes(searchLower) ||
         a.regNumber.toLowerCase().includes(searchLower) ||
-        a.phone.includes(searchQuery);
+        a.phone.includes(searchQuery.trim());
 
       // Department
       const matchesDept = filterDepartment === 'all' || a.departmentInterest === filterDepartment;
@@ -421,7 +474,7 @@ export const DailyAttendanceTracker: React.FC<DailyAttendanceTrackerProps> = ({
                 Camp Timeline (August 23 – 30, 2026)
               </h3>
               <p className="text-xs text-[#94A3B8]">
-                Select a camp day to mark and monitor daily attendance. Day 1: Evening Arrival • Days 2–7: 4 Daily Sessions • Day 8: Morning Thanksgiving (10am–1pm).
+                Select a camp day to mark and monitor daily attendance. Day 1: Evening Arrival • Days 2–6: 4 Daily Sessions • Day 7: 5am Prayer Walk • Day 8: Morning Thanksgiving (10am–1pm).
               </p>
             </div>
           </div>
@@ -484,6 +537,8 @@ export const DailyAttendanceTracker: React.FC<DailyAttendanceTrackerProps> = ({
                   <p className={`text-xs font-extrabold ${isSelected ? 'text-[#0F172A]' : 'text-[#F8FAFC]'}`}>
                     {day.dayNumber === 1
                       ? 'Sun, Aug 23 (Arrival)'
+                      : day.dayNumber === 7
+                      ? 'Sat, Aug 29 (5am Walk)'
                       : day.dayNumber === 8
                       ? 'Sun, Aug 30 (Thanksgiving)'
                       : day.label.split('—')[1]?.trim() || day.label}
@@ -515,6 +570,8 @@ export const DailyAttendanceTracker: React.FC<DailyAttendanceTrackerProps> = ({
               <span className="text-xs font-mono bg-purple-950/60 text-purple-300 border border-purple-500/40 px-2.5 py-0.5 rounded-full font-bold">
                 {selectedDayNumber === 1
                   ? 'Evening Session Only: Arrival of Camp Participants'
+                  : selectedDayNumber === 7
+                  ? 'Morning Session Only: 5:00 AM Prayer Walk'
                   : selectedDayNumber === 8
                   ? 'Morning Service Only (10:00 AM – 1:00 PM)'
                   : '4 Key Activities Daily'}

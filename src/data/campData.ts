@@ -269,7 +269,8 @@ export const INITIAL_EXPECTATIONS: ExpectationPost[] = [];
 /**
  * CAMP ATTENDANCE ACTIVITIES DEFINITIONS
  * - Day 1: Evening session only (Arrival of Camp Participants)
- * - Days 2 – 7: 4 major daily sessions (5:00 AM, 12:00 PM, 6:00 PM, 11:00 PM)
+ * - Days 2 – 6: 4 major daily sessions (5:00 AM, 12:00 PM, 6:00 PM, 11:00 PM)
+ * - Day 7: Morning session only (5:00 AM Prayer Walk)
  * - Day 8: Morning session only (10:00 AM – 1:00 PM Thanksgiving Morning Service)
  */
 
@@ -314,6 +315,16 @@ export const STANDARD_DAY_ACTIVITIES: CampActivityDef[] = [
   },
 ];
 
+export const DAY_7_ACTIVITIES: CampActivityDef[] = [
+  {
+    key: 'prayerWalk_5am',
+    time: '5:00 AM',
+    name: 'Morning Prayer Walk',
+    iconName: 'Footprints',
+    description: '5:00 AM — Morning prayer walk surrounding the camp premises with intercession, warfare, and victory declarations.',
+  },
+];
+
 export const DAY_8_ACTIVITIES: CampActivityDef[] = [
   {
     key: 'morningService_10am',
@@ -326,6 +337,7 @@ export const DAY_8_ACTIVITIES: CampActivityDef[] = [
 
 export const getDayActivities = (dayNumber: number): CampActivityDef[] => {
   if (dayNumber === 1) return DAY_1_ACTIVITIES;
+  if (dayNumber === 7) return DAY_7_ACTIVITIES;
   if (dayNumber === 8) return DAY_8_ACTIVITIES;
   return STANDARD_DAY_ACTIVITIES;
 };
@@ -383,9 +395,9 @@ export const CAMP_DAYS: CampDayDef[] = [
   {
     dayNumber: 7,
     dateStr: '2026-08-29',
-    label: 'Day 7 — Sat, Aug 29',
-    activitiesNote: '4 Daily Sessions (5 AM, 12 PM, 6 PM, 11 PM)',
-    activities: STANDARD_DAY_ACTIVITIES,
+    label: 'Day 7 — Sat, Aug 29 (5:00 AM Prayer Walk)',
+    activitiesNote: 'Morning Session Only: 5:00 AM Prayer Walk',
+    activities: DAY_7_ACTIVITIES,
   },
   {
     dayNumber: 8,
