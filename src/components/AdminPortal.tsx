@@ -94,7 +94,16 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   // Notice when unauthorized role tries to delete
   const [deleteRestrictedNotice, setDeleteRestrictedNotice] = useState<string | null>(null);
 
-  const [activeAdminTab, setActiveAdminTab] = useState<'registry' | 'daily_attendance' | 'user_accounts'>('registry');
+  const [activeAdminTab, setActiveAdminTab] = useState<'registry' | 'daily_attendance' | 'user_accounts'>(() => {
+    try {
+      const saved = localStorage.getItem('trh_camp_active_admin_subtab');
+      if (saved === 'registry' || saved === 'daily_attendance' || saved === 'user_accounts') {
+        localStorage.removeItem('trh_camp_active_admin_subtab');
+        return saved;
+      }
+    } catch {}
+    return 'registry';
+  });
 
   const [searchQuery, setSearchQuery] = useState('');
   const [filterPayment, setFilterPayment] = useState<string>('all');
@@ -104,7 +113,16 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   const [filterChildren, setFilterChildren] = useState<string>('all');
   const [filterMedical, setFilterMedical] = useState<string>('all');
 
-  const [showAddModal, setShowAddModal] = useState(false);
+  const [showAddModal, setShowAddModal] = useState<boolean>(() => {
+    try {
+      const openAdd = localStorage.getItem('trh_camp_open_add_modal');
+      if (openAdd === 'true') {
+        localStorage.removeItem('trh_camp_open_add_modal');
+        return true;
+      }
+    } catch {}
+    return false;
+  });
   const [manualSurname, setManualSurname] = useState('');
   const [manualFirstName, setManualFirstName] = useState('');
   const [manualOtherNames, setManualOtherNames] = useState('');
@@ -618,35 +636,36 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
           Manage registered camp participants, confirm ₦1,000 fee payments, monitor sleepover accommodation counts, track medical alerts, and export data.
         </p>
 
-        {/* Action bar & View Tabs */}
-        <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+        {/* Action bar & View Tabs - Centralized on mobile devices with tight text-conforming borders */}
+        <div className="flex flex-col lg:flex-row items-center justify-between gap-3.5 pt-2 w-full">
           {/* Main Module Tabs */}
-          <div className="flex flex-wrap items-center gap-2 bg-[#0F172A] p-1.5 rounded-2xl border border-[#334155]">
+          <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-2 bg-[#0F172A] p-1.5 rounded-2xl border border-[#334155] w-full lg:w-auto text-center">
             <button
               type="button"
               onClick={() => setActiveAdminTab('registry')}
-              className={`px-4 py-2 rounded-xl text-xs font-extrabold flex items-center gap-2 transition-all cursor-pointer ${
+              className={`w-auto max-w-full inline-flex items-center justify-center px-3.5 py-2 rounded-xl text-xs font-extrabold gap-2 transition-all cursor-pointer border ${
                 activeAdminTab === 'registry'
-                  ? 'bg-[#FF8A00] text-[#0F172A] shadow-md'
-                  : 'text-[#94A3B8] hover:text-[#F8FAFC] hover:bg-[#1E293B]'
+                  ? 'bg-[#FF8A00] text-[#0F172A] border-[#FF8A00] shadow-md'
+                  : 'text-[#94A3B8] border-transparent hover:text-[#F8FAFC] hover:bg-[#1E293B] hover:border-[#334155]'
               }`}
             >
-              <Users className="w-4 h-4" />
-              <span>Registry & Financial Verification</span>
+              <Users className="w-4 h-4 shrink-0" />
+              <span className="whitespace-nowrap">Registry &amp; Financial Verification</span>
             </button>
 
             <button
               type="button"
               onClick={() => setActiveAdminTab('daily_attendance')}
-              className={`px-4 py-2 rounded-xl text-xs font-extrabold flex items-center gap-2 transition-all cursor-pointer ${
+              className={`w-auto max-w-full inline-flex items-center justify-center text-center px-3.5 py-2 rounded-xl text-xs font-extrabold gap-2 transition-all cursor-pointer border ${
                 activeAdminTab === 'daily_attendance'
-                  ? 'bg-purple-600 text-white shadow-md'
-                  : 'text-purple-300 hover:text-white hover:bg-purple-950/50'
+                  ? 'bg-purple-600 text-white border-purple-500 shadow-md'
+                  : 'text-purple-300 border-transparent hover:text-white hover:bg-purple-950/50 hover:border-purple-500/30'
               }`}
             >
-              <CalendarCheck2 className="w-4 h-4" />
-              <span>Daily Camp Attendance (4 Activities / 8 Days)</span>
-              <span className="text-[10px] bg-purple-900 px-1.5 py-0.2 rounded-full border border-purple-400/40">
+              <CalendarCheck2 className="w-4 h-4 shrink-0" />
+              <span className="sm:hidden">Daily Attendance (4 Activities / 8 Days)</span>
+              <span className="hidden sm:inline whitespace-nowrap">Daily Camp Attendance (4 Activities / 8 Days)</span>
+              <span className="text-[10px] bg-purple-900 px-1.5 py-0.2 rounded-full border border-purple-400/40 shrink-0">
                 New
               </span>
             </button>
@@ -655,15 +674,15 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
               <button
                 type="button"
                 onClick={() => setActiveAdminTab('user_accounts')}
-                className={`px-4 py-2 rounded-xl text-xs font-extrabold flex items-center gap-2 transition-all cursor-pointer ${
+                className={`w-auto max-w-full inline-flex items-center justify-center px-3.5 py-2 rounded-xl text-xs font-extrabold gap-2 transition-all cursor-pointer border ${
                   activeAdminTab === 'user_accounts'
-                    ? 'bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 text-white shadow-lg border border-purple-400/40'
-                    : 'text-purple-300 hover:text-white hover:bg-purple-950/60'
+                    ? 'bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 text-white shadow-lg border-purple-400/40'
+                    : 'text-purple-300 border-transparent hover:text-white hover:bg-purple-950/60 hover:border-purple-500/30'
                 }`}
               >
-                <ShieldCheck className="w-4 h-4 text-[#FF8A00]" />
-                <span>User Accounts &amp; RBAC</span>
-                <span className="text-[10px] bg-[#0F172A] text-[#FF8A00] font-mono px-2 py-0.5 rounded-full border border-[#FF8A00]/40 font-bold">
+                <ShieldCheck className="w-4 h-4 text-[#FF8A00] shrink-0" />
+                <span className="whitespace-nowrap">User Accounts &amp; RBAC</span>
+                <span className="text-[10px] bg-[#0F172A] text-[#FF8A00] font-mono px-2 py-0.5 rounded-full border border-[#FF8A00]/40 font-bold shrink-0">
                   Super Admin
                 </span>
               </button>
@@ -671,21 +690,21 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
           </div>
 
           {activeAdminTab === 'registry' && (
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-2.5 w-full lg:w-auto">
               <button
                 onClick={() => setShowAddModal(true)}
-                className="px-4 py-2.5 rounded-xl bg-[#FF8A00] hover:bg-[#E85B00] text-[#0F172A] font-extrabold text-xs sm:text-sm flex items-center gap-2 cursor-pointer shadow"
+                className="w-auto max-w-full inline-flex items-center justify-center px-4 py-2 rounded-xl bg-[#FF8A00] hover:bg-[#E85B00] text-[#0F172A] font-extrabold text-xs sm:text-sm gap-2 cursor-pointer shadow transition-all active:scale-[0.98] border border-[#FF8A00]"
               >
-                <UserPlus className="w-4 h-4 text-[#0F172A]" />
-                <span>Add Walk-in Attendee</span>
+                <UserPlus className="w-4 h-4 text-[#0F172A] shrink-0" />
+                <span className="whitespace-nowrap">Add Walk-in Attendee</span>
               </button>
 
               <button
                 onClick={handleExportCSV}
-                className="px-4 py-2.5 rounded-xl bg-[#334155] hover:bg-[#0F172A] text-[#F8FAFC] font-semibold text-xs sm:text-sm flex items-center gap-2 border border-[#334155] cursor-pointer"
+                className="w-auto max-w-full inline-flex items-center justify-center px-4 py-2 rounded-xl bg-[#334155] hover:bg-[#0F172A] text-[#F8FAFC] font-semibold text-xs sm:text-sm gap-2 border border-[#475569] cursor-pointer transition-all active:scale-[0.98]"
               >
-                <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
-                <span>Export CSV</span>
+                <FileSpreadsheet className="w-4 h-4 text-emerald-400 shrink-0" />
+                <span className="whitespace-nowrap">Export CSV</span>
               </button>
             </div>
           )}

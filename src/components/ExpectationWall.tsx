@@ -352,14 +352,14 @@ export const ExpectationWall: React.FC = () => {
         )}
 
         {/* Action Controls Header */}
-        <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-white/10">
-          <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-white/10 w-full">
+          <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-2.5 w-full sm:w-auto">
             <button
               onClick={() => setShowForm(!showForm)}
-              className="px-5 py-2.5 rounded-xl bg-[#FF8A00] hover:bg-[#E85B00] text-[#0F172A] font-black text-xs sm:text-sm flex items-center gap-2 shadow-lg transition-all cursor-pointer active:scale-95"
+              className="w-auto max-w-full inline-flex items-center justify-center px-4 py-2.5 rounded-xl bg-[#FF8A00] hover:bg-[#E85B00] text-[#0F172A] font-black text-xs sm:text-sm gap-2 shadow-lg transition-all cursor-pointer active:scale-95 border border-[#FF8A00]"
             >
-              <Plus className="w-4 h-4 text-[#0F172A]" />
-              <span>Post Your Expectation</span>
+              <Plus className="w-4 h-4 text-[#0F172A] shrink-0" />
+              <span className="whitespace-nowrap">Post Your Expectation</span>
             </button>
 
             {/* MASK ALL NAMES AS ANONYMOUS TOGGLE BUTTON - ONLY VISIBLE TO ADMINS */}
@@ -367,7 +367,7 @@ export const ExpectationWall: React.FC = () => {
               <button
                 type="button"
                 onClick={handleToggleMaskAll}
-                className={`px-4 py-2.5 rounded-xl text-xs font-black border flex items-center gap-2 transition-all cursor-pointer shadow-sm active:scale-95 ${
+                className={`w-auto max-w-full inline-flex items-center justify-center text-center px-3.5 py-2.5 rounded-xl text-xs font-black border gap-2 transition-all cursor-pointer shadow-sm active:scale-95 ${
                   maskAllNames
                     ? 'bg-purple-600 hover:bg-purple-500 text-white border-purple-400 ring-2 ring-purple-400/50'
                     : 'bg-[#1E293B] hover:bg-[#334155] text-[#F8FAFC] border-[#475569]'
@@ -375,13 +375,15 @@ export const ExpectationWall: React.FC = () => {
               >
                 {maskAllNames ? (
                   <>
-                    <UserX className="w-4 h-4 text-purple-200" />
-                    <span>Names Masked as Anonymous (Click to Reveal All)</span>
+                    <UserX className="w-4 h-4 text-purple-200 shrink-0" />
+                    <span className="sm:hidden">Names Masked (Click to Reveal)</span>
+                    <span className="hidden sm:inline">Names Masked as Anonymous (Click to Reveal All)</span>
                   </>
                 ) : (
                   <>
-                    <EyeOff className="w-4 h-4 text-[#FF8A00]" />
-                    <span>Mask All Names as Anonymous</span>
+                    <EyeOff className="w-4 h-4 text-[#FF8A00] shrink-0" />
+                    <span className="sm:hidden">Mask All Names</span>
+                    <span className="hidden sm:inline">Mask All Names as Anonymous</span>
                   </>
                 )}
               </button>
@@ -393,17 +395,17 @@ export const ExpectationWall: React.FC = () => {
                   setAdminPasswordInput('');
                   setShowAdminAuthModal(true);
                 }}
-                className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-[#1E293B]/80 hover:bg-[#1E293B] text-[#94A3B8] hover:text-[#F8FAFC] border border-[#334155] flex items-center gap-1.5 transition-all cursor-pointer"
+                className="w-auto max-w-full inline-flex items-center justify-center px-3.5 py-2.5 rounded-xl text-xs font-semibold bg-[#1E293B]/80 hover:bg-[#1E293B] text-[#94A3B8] hover:text-[#F8FAFC] border border-[#334155] gap-1.5 transition-all cursor-pointer"
               >
-                <KeyRound className="w-3.5 h-3.5 text-[#FF8A00]" />
-                <span>Admin Login</span>
+                <KeyRound className="w-3.5 h-3.5 text-[#FF8A00] shrink-0" />
+                <span className="whitespace-nowrap">Admin Login</span>
               </button>
             )}
           </div>
 
-          <div className="flex items-center gap-3 text-xs text-[#CBD5E1] font-mono">
-            <span className="bg-[#0F172A]/70 px-3 py-1 rounded-xl border border-white/10 flex items-center gap-1.5">
-              <Globe className="w-3.5 h-3.5 text-[#FF8A00]" />
+          <div className="flex items-center justify-center gap-3 text-xs text-[#CBD5E1] font-mono">
+            <span className="bg-[#0F172A]/70 px-3 py-1.5 rounded-xl border border-white/10 flex items-center gap-1.5">
+              <Globe className="w-3.5 h-3.5 text-[#FF8A00] shrink-0" />
               <span>{posts.length} Faith Expectations</span>
             </span>
           </div>
