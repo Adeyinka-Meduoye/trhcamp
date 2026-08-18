@@ -381,9 +381,6 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
             <p>
               Please report directly to the <span className="text-[#FF8A00] font-semibold">TRH Information Desk</span> at the church premises ({CAMP_DETAILS.venue}) during camp arrival.
             </p>
-            <div className="pt-2 border-t border-[#334155] text-[11px] text-[#94A3B8] font-mono">
-              💡 <span className="font-bold text-[#FF8A00]">Developer / Administrator Note:</span> To reopen or adjust the registration deadline, edit <code className="bg-[#1E293B] px-1.5 py-0.5 rounded text-[#F8FAFC]">REGISTRATION_CLOSURE_DATE</code> or set <code className="bg-[#1E293B] px-1.5 py-0.5 rounded text-[#F8FAFC]">IS_REGISTRATION_MANUALLY_OVERRIDDEN = true</code> in <code className="text-[#FF8A00]">/src/data/campData.ts</code>.
-            </div>
           </div>
         </div>
       </div>
