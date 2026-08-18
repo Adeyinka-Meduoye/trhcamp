@@ -74,6 +74,7 @@ export const GuidelinesView: React.FC<GuidelinesViewProps> = ({ attendees = [] }
       summary: 'Silent mode during prayer, teachings, and worship.',
       details: [
         'Mobile phones should only be used when necessary.',
+        'Mobile phones shall be collected by the Camp Administration before the senior pastor teaching session.',
         'During prayer sessions, teachings, worship, and Bible study, all devices must be switched to silent mode.',
         'Excessive phone usage that distracts from the spiritual purpose of the camp is discouraged.',
       ],
