@@ -409,3 +409,117 @@ export const CAMP_DAYS: CampDayDef[] = [
   },
 ];
 
+/**
+ * Standard System Roles for RBAC
+ */
+export const STANDARD_ADMIN_ROLES: string[] = [
+  'Innovation & Technology Lead',
+  'Senior & Founding Pastor',
+  'Director, Church Administration',
+  'Assistant Director, Church Administration',
+  'Senate President',
+  'Camp Director',
+  'Information Desk',
+  'Information Desk Two',
+  'Registration Officer',
+  'Security Lead',
+  'Medical & Health Lead',
+  'Protocol & Logistics Lead',
+  'Hospitality & Welfare Lead',
+  'Media & Broadcast Lead',
+];
+
+/**
+ * Default System Administrator Accounts
+ */
+export const DEFAULT_ADMIN_USERS: import('../types').AdminUser[] = [
+  {
+    id: 'admin_tech_lead',
+    fullName: 'Innovation & Technology Lead',
+    username: 'Innovation & Technology Lead',
+    password: 'trhTech2026',
+    role: 'Innovation & Technology Lead',
+    isSuperAdmin: true,
+    createdAt: '2026-08-01T08:00:00.000Z',
+    notes: 'Super Administrator with master access to RBAC, credentials, pass management, and record deletion.',
+    createdBy: 'System Root',
+  },
+  {
+    id: 'admin_pastor',
+    fullName: 'Senior & Founding Pastor',
+    username: 'Senior & Founding Pastor',
+    password: 'trhPastor2026',
+    role: 'Senior & Founding Pastor',
+    isSuperAdmin: false,
+    createdAt: '2026-08-01T08:00:00.000Z',
+    notes: 'Camp Spiritual Oversight and Executive Pastoral Direction.',
+    createdBy: 'System Root',
+  },
+  {
+    id: 'admin_church_dir',
+    fullName: 'Director, Church Administration',
+    username: 'Director, Church Administration',
+    password: 'trhAdmin2026',
+    role: 'Director, Church Administration',
+    isSuperAdmin: false,
+    createdAt: '2026-08-01T08:00:00.000Z',
+    notes: 'Church and Camp Administrative Operations Lead.',
+    createdBy: 'System Root',
+  },
+  {
+    id: 'admin_church_asst_dir',
+    fullName: 'Assistant Director, Church Administration',
+    username: 'Assistant Director, Church Administration',
+    password: 'trhAsstAdmin2026',
+    role: 'Assistant Director, Church Administration',
+    isSuperAdmin: false,
+    createdAt: '2026-08-01T08:00:00.000Z',
+    notes: 'Operations and Logistics Coordination.',
+    createdBy: 'System Root',
+  },
+  {
+    id: 'admin_senate',
+    fullName: 'Senate President',
+    username: 'Senate President',
+    password: 'trhSenate2026',
+    role: 'Senate President',
+    isSuperAdmin: false,
+    createdAt: '2026-08-01T08:00:00.000Z',
+    notes: 'Governance and Inter-Departmental Leadership.',
+    createdBy: 'System Root',
+  },
+  {
+    id: 'admin_camp_dir',
+    fullName: 'Camp Director',
+    username: 'Camp Director',
+    password: 'trhCamp2026',
+    role: 'Camp Director',
+    isSuperAdmin: false,
+    createdAt: '2026-08-01T08:00:00.000Z',
+    notes: 'On-site Camp Ground Coordination and Welfare.',
+    createdBy: 'System Root',
+  },
+  {
+    id: 'admin_info_desk_1',
+    fullName: 'Information Desk Lead',
+    username: 'Information Desk',
+    password: 'trhInfo2026',
+    role: 'Information Desk',
+    isSuperAdmin: false,
+    createdAt: '2026-08-01T08:00:00.000Z',
+    notes: 'Front Desk Inquiries, Verification, and Attendee Check-In.',
+    createdBy: 'System Root',
+  },
+  {
+    id: 'admin_info_desk_2',
+    fullName: 'Information Desk Support',
+    username: 'Information Desk Two',
+    password: 'trhInfoTwo2026',
+    role: 'Information Desk Two',
+    isSuperAdmin: false,
+    createdAt: '2026-08-01T08:00:00.000Z',
+    notes: 'Secondary Desk Attendee Verification and Pass Management.',
+    createdBy: 'System Root',
+  },
+];
+

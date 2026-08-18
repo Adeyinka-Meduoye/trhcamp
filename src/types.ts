@@ -128,4 +128,18 @@ export interface ExpectationPost {
   visibility?: 'public' | 'private';
 }
 
+export interface AdminUser {
+  id: string;
+  fullName: string;
+  username: string; // Login ID
+  password: string;
+  role: string;
+  isSuperAdmin?: boolean;
+  createdAt: string;
+  updatedAt?: string;
+  lastLoginAt?: string;
+  notes?: string;
+  createdBy?: string;
+}
+
 

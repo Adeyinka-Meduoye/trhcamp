@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Attendee, CommitteeName, PaymentStatus } from '../types';
-import { CAMP_DETAILS } from '../data/campData';
+import { Attendee, CommitteeName, PaymentStatus, AdminUser } from '../types';
+import { CAMP_DETAILS, DEFAULT_ADMIN_USERS, STANDARD_ADMIN_ROLES } from '../data/campData';
 import { DailyAttendanceTracker } from './DailyAttendanceTracker';
+import { UserAccountManagement } from './UserAccountManagement';
+import { subscribeAdminUsers, seedInitialAdminUsersIfEmpty } from '../lib/firebase';
 import {
   ShieldAlert,
   Search,
@@ -29,6 +31,8 @@ import {
   Baby,
   Calendar,
   CalendarCheck2,
+  Shield,
+  UserCog,
 } from 'lucide-react';
 
 const ADMIN_USERNAMES = [
@@ -63,6 +67,21 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
     return localStorage.getItem('trh_camp_admin_role') || null;
   });
 
+  // Admin Users list synchronized in real-time from Firestore
+  const [adminUsers, setAdminUsers] = useState<AdminUser[]>(DEFAULT_ADMIN_USERS);
+
+  useEffect(() => {
+    const unsubscribe = subscribeAdminUsers((fetchedUsers) => {
+      if (fetchedUsers.length > 0) {
+        setAdminUsers(fetchedUsers);
+      } else {
+        // Seed default admins if collection is empty
+        seedInitialAdminUsersIfEmpty(DEFAULT_ADMIN_USERS);
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
   const [selectedUsername, setSelectedUsername] = useState<string>(ADMIN_USERNAMES[0]);
   const [passwordInput, setPasswordInput] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
@@ -75,7 +94,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   // Notice when unauthorized role tries to delete
   const [deleteRestrictedNotice, setDeleteRestrictedNotice] = useState<string | null>(null);
 
-  const [activeAdminTab, setActiveAdminTab] = useState<'registry' | 'daily_attendance'>('registry');
+  const [activeAdminTab, setActiveAdminTab] = useState<'registry' | 'daily_attendance' | 'user_accounts'>('registry');
 
   const [searchQuery, setSearchQuery] = useState('');
   const [filterPayment, setFilterPayment] = useState<string>('all');
@@ -122,7 +141,18 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   const [manualChildrenAges, setManualChildrenAges] = useState('');
   const [manualExpectations, setManualExpectations] = useState('');
 
-  const isTechLead = authenticatedRole === 'Innovation & Technology Lead';
+  // Super Admin check (Innovation & Technology Lead or user with master super admin rights)
+  const isSuperAdmin =
+    authenticatedRole === 'Innovation & Technology Lead' ||
+    adminUsers.some(
+      (u) =>
+        (u.username.toLowerCase() === (authenticatedRole || '').toLowerCase() ||
+          u.fullName.toLowerCase() === (authenticatedRole || '').toLowerCase() ||
+          u.role.toLowerCase() === (authenticatedRole || '').toLowerCase()) &&
+        (Boolean(u.isSuperAdmin) || u.role === 'Innovation & Technology Lead')
+    );
+
+  const isTechLead = isSuperAdmin;
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -130,10 +160,31 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
     setIsAuthenticating(true);
 
     try {
+      // 1. First check against dynamic admin users loaded from Firestore
+      const matchedUser = adminUsers.find(
+        (u) =>
+          u.username.toLowerCase() === selectedUsername.toLowerCase() ||
+          u.fullName.toLowerCase() === selectedUsername.toLowerCase() ||
+          u.role.toLowerCase() === selectedUsername.toLowerCase()
+      );
+
+      if (matchedUser && matchedUser.password.trim() === passwordInput.trim()) {
+        const roleToSet = matchedUser.role || matchedUser.username;
+        setAuthenticatedRole(roleToSet);
+        localStorage.setItem('trh_camp_admin_role', roleToSet);
+        setPasswordInput('');
+        return;
+      }
+
+      // 2. Call server endpoint with dynamic candidates
       const res = await fetch('/api/admin/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: selectedUsername, password: passwordInput }),
+        body: JSON.stringify({
+          username: selectedUsername,
+          password: passwordInput,
+          candidateUsers: adminUsers,
+        }),
       });
 
       const contentType = res.headers.get('content-type');
@@ -155,6 +206,20 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
         setLoginError(`Authentication failed for ${selectedUsername}. Please check your credentials.`);
       }
     } catch (err: any) {
+      // Fallback check against local admin list if network was offline
+      const matchedUser = adminUsers.find(
+        (u) =>
+          u.username.toLowerCase() === selectedUsername.toLowerCase() ||
+          u.fullName.toLowerCase() === selectedUsername.toLowerCase()
+      );
+      if (matchedUser && matchedUser.password.trim() === passwordInput.trim()) {
+        const roleToSet = matchedUser.role || matchedUser.username;
+        setAuthenticatedRole(roleToSet);
+        localStorage.setItem('trh_camp_admin_role', roleToSet);
+        setPasswordInput('');
+        return;
+      }
+
       setLoginError('Connection error verifying credentials. Please try again.');
     } finally {
       setIsAuthenticating(false);
@@ -226,11 +291,17 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                 }}
                 className="w-full px-4 py-3 rounded-xl border border-[#334155] bg-[#334155] text-[#F8FAFC] text-xs sm:text-sm font-semibold focus:border-[#FF8A00] focus:ring-1 focus:ring-[#FF8A00] outline-none"
               >
-                {ADMIN_USERNAMES.map((name) => (
-                  <option key={name} value={name} className="bg-[#1E293B] text-[#F8FAFC]">
-                    {name}
-                  </option>
-                ))}
+                {adminUsers && adminUsers.length > 0
+                  ? adminUsers.map((user) => (
+                      <option key={user.id} value={user.username} className="bg-[#1E293B] text-[#F8FAFC]">
+                        {user.fullName === user.username ? user.fullName : `${user.fullName} (${user.username}) — ${user.role}`}
+                      </option>
+                    ))
+                  : ADMIN_USERNAMES.map((name) => (
+                      <option key={name} value={name} className="bg-[#1E293B] text-[#F8FAFC]">
+                        {name}
+                      </option>
+                    ))}
               </select>
             </div>
 
@@ -579,6 +650,24 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                 New
               </span>
             </button>
+
+            {isSuperAdmin && (
+              <button
+                type="button"
+                onClick={() => setActiveAdminTab('user_accounts')}
+                className={`px-4 py-2 rounded-xl text-xs font-extrabold flex items-center gap-2 transition-all cursor-pointer ${
+                  activeAdminTab === 'user_accounts'
+                    ? 'bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 text-white shadow-lg border border-purple-400/40'
+                    : 'text-purple-300 hover:text-white hover:bg-purple-950/60'
+                }`}
+              >
+                <ShieldCheck className="w-4 h-4 text-[#FF8A00]" />
+                <span>User Accounts &amp; RBAC</span>
+                <span className="text-[10px] bg-[#0F172A] text-[#FF8A00] font-mono px-2 py-0.5 rounded-full border border-[#FF8A00]/40 font-bold">
+                  Super Admin
+                </span>
+              </button>
+            )}
           </div>
 
           {activeAdminTab === 'registry' && (
@@ -608,6 +697,11 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
           attendees={attendees}
           onUpdateAttendee={onUpdateAttendee}
           authenticatedRole={authenticatedRole}
+        />
+      ) : activeAdminTab === 'user_accounts' ? (
+        <UserAccountManagement
+          adminUsers={adminUsers}
+          currentAdminRole={authenticatedRole}
         />
       ) : (
         <>

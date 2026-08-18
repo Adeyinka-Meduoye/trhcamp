@@ -1,0 +1,82 @@
+{
+  "entities": {
+    "Attendee": {
+      "title": "Attendee",
+      "description": "Registered participant for TRH Victory Camp 2026",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique identifier for the attendee" },
+        "regNumber": { "type": "string", "description": "Official Camp Registration Number" },
+        "surname": { "type": "string", "description": "Attendee Surname" },
+        "firstName": { "type": "string", "description": "Attendee First Name" },
+        "otherNames": { "type": "string", "description": "Middle or other names" },
+        "gender": { "type": "string", "enum": ["Male", "Female"] },
+        "phone": { "type": "string", "description": "Phone number" },
+        "email": { "type": "string", "description": "Email address" },
+        "departmentInterest": { "type": "string", "description": "Camp service department or committee" },
+        "paymentStatus": { "type": "string", "enum": ["Paid", "Pending"] },
+        "sleepOver": { "type": "boolean", "description": "Whether staying on camp grounds" },
+        "registeredAt": { "type": "string", "description": "Registration ISO timestamp" },
+        "isCheckedIn": { "type": "boolean", "description": "Physical arrival check-in status" }
+      },
+      "required": ["id", "regNumber", "surname", "firstName", "phone", "registeredAt"]
+    },
+    "ExpectationPost": {
+      "title": "ExpectationPost",
+      "description": "Faith expectation submitted by camp attendees",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique post identifier" },
+        "authorName": { "type": "string", "description": "Display author name" },
+        "category": { "type": "string", "description": "Spiritual category" },
+        "message": { "type": "string", "description": "Prayer request or faith declaration" },
+        "amenCount": { "type": "number", "description": "Amen agreement count" },
+        "createdAt": { "type": "string", "description": "Submission ISO timestamp" }
+      },
+      "required": ["id", "authorName", "message", "createdAt"]
+    },
+    "WallSettings": {
+      "title": "WallSettings",
+      "description": "Global settings for the Expectation Wall",
+      "type": "object",
+      "properties": {
+        "maskAllNames": { "type": "boolean", "description": "Whether all names are masked as anonymous" },
+        "individuallyToggledIds": { "type": "array", "description": "IDs of individually toggled posts" }
+      }
+    },
+    "AdminUser": {
+      "title": "AdminUser",
+      "description": "Administrative system user account with role-based access control",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique user account ID" },
+        "fullName": { "type": "string", "description": "Staff member full name" },
+        "username": { "type": "string", "description": "Unique login ID / username" },
+        "password": { "type": "string", "description": "System login password" },
+        "role": { "type": "string", "description": "Administrative role title" },
+        "isSuperAdmin": { "type": "boolean", "description": "Whether user has super admin master privileges" },
+        "createdAt": { "type": "string", "description": "Account creation ISO timestamp" },
+        "updatedAt": { "type": "string", "description": "Last updated ISO timestamp" }
+      },
+      "required": ["id", "fullName", "username", "password", "role", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/attendees/{attendeeId}": {
+      "schema": "Attendee",
+      "description": "Camp attendee registration records"
+    },
+    "/expectations/{expectationId}": {
+      "schema": "ExpectationPost",
+      "description": "Faith expectations published by attendees"
+    },
+    "/settings/{settingId}": {
+      "schema": "WallSettings",
+      "description": "Global wall configuration settings"
+    },
+    "/admin_users/{userId}": {
+      "schema": "AdminUser",
+      "description": "System administrator user accounts managed by Super Admin"
+    }
+  }
+}

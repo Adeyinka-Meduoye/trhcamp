@@ -14,7 +14,7 @@ import {
   serverTimestamp,
 } from 'firebase/firestore';
 import firebaseConfigJson from '../../firebase-applet-config.json';
-import { Attendee, ExpectationPost } from '../types';
+import { Attendee, ExpectationPost, AdminUser } from '../types';
 
 // Initialize Firebase App
 const app = getApps().length === 0 ? initializeApp(firebaseConfigJson) : getApps()[0];
@@ -27,6 +27,7 @@ export const db = firebaseConfigJson.firestoreDatabaseId
 // Firestore Collections
 const ATTENDEES_COLLECTION = 'attendees';
 const EXPECTATIONS_COLLECTION = 'expectations';
+const ADMIN_USERS_COLLECTION = 'admin_users';
 
 // Helper to strip undefined values before passing to Firestore
 export const sanitizeForFirestore = <T extends Record<string, any>>(obj: T): Record<string, any> => {
@@ -199,6 +200,82 @@ export const updateWallSettingsInFirestore = async (settings: Partial<WallSettin
   } catch (err) {
     console.error('Failed to update wall settings in Firestore:', err);
     throw err;
+  }
+};
+
+// --- ADMIN USERS & RBAC FIRESTORE HELPERS ---
+
+export const subscribeAdminUsers = (callback: (users: AdminUser[]) => void) => {
+  const colRef = collection(db, ADMIN_USERS_COLLECTION);
+  const q = query(colRef, orderBy('createdAt', 'asc'));
+
+  const processSnapshot = (snapshot: any) => {
+    const list: AdminUser[] = [];
+    snapshot.forEach((docSnap: any) => {
+      list.push({ id: docSnap.id, ...docSnap.data() } as AdminUser);
+    });
+    callback(list);
+  };
+
+  return onSnapshot(
+    q,
+    processSnapshot,
+    (err) => {
+      console.warn('Firestore admin_users ordered listener encountered issue, retrying unordered:', err.message);
+      onSnapshot(colRef, processSnapshot, (fallbackErr) => {
+        console.warn('Firestore admin_users snapshot offline/unavailable:', fallbackErr.message);
+      });
+    }
+  );
+};
+
+export const saveAdminUserToFirestore = async (user: AdminUser): Promise<AdminUser> => {
+  try {
+    const docRef = doc(db, ADMIN_USERS_COLLECTION, user.id);
+    const cleanedUser = sanitizeForFirestore(user);
+    await setDoc(docRef, cleanedUser);
+    return user;
+  } catch (err) {
+    console.error('Failed to save admin user to Firestore:', err);
+    throw err;
+  }
+};
+
+export const updateAdminUserInFirestore = async (user: AdminUser): Promise<void> => {
+  try {
+    const docRef = doc(db, ADMIN_USERS_COLLECTION, user.id);
+    const cleanedUser = sanitizeForFirestore(user);
+    await setDoc(docRef, cleanedUser, { merge: true });
+  } catch (err) {
+    console.error('Failed to update admin user in Firestore:', err);
+    throw err;
+  }
+};
+
+export const deleteAdminUserFromFirestore = async (id: string): Promise<void> => {
+  try {
+    const docRef = doc(db, ADMIN_USERS_COLLECTION, id);
+    await deleteDoc(docRef);
+  } catch (err) {
+    console.error('Failed to delete admin user from Firestore:', err);
+    throw err;
+  }
+};
+
+export const seedInitialAdminUsersIfEmpty = async (defaultUsers: AdminUser[]): Promise<void> => {
+  try {
+    const colRef = collection(db, ADMIN_USERS_COLLECTION);
+    const snapshot = await getDocs(colRef);
+    if (snapshot.empty) {
+      console.log('Seeding initial admin user accounts to Firestore...');
+      for (const user of defaultUsers) {
+        const docRef = doc(db, ADMIN_USERS_COLLECTION, user.id);
+        await setDoc(docRef, sanitizeForFirestore(user));
+      }
+      console.log(`Seeded ${defaultUsers.length} initial admin users.`);
+    }
+  } catch (err) {
+    console.warn('Could not seed initial admin users (offline or permissions):', err);
   }
 };
 

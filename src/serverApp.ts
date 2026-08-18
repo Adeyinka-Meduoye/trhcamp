@@ -28,23 +28,58 @@ const getExpectedAdminPassword = (username: string): string | undefined => {
 
 // API Route: Admin Authentication
 app.post('/api/admin/login', (req, res) => {
-  const { username, password } = req.body;
+  const { username, password, candidateUsers } = req.body;
 
   if (!username || !password) {
     return res.status(400).json({ success: false, error: 'Username and password are required.' });
   }
 
+  // 1. Check if username matches dynamic candidate users passed from client / Firestore sync
+  if (Array.isArray(candidateUsers) && candidateUsers.length > 0) {
+    const matchedUser = candidateUsers.find(
+      (u: any) =>
+        (u.username && u.username.toLowerCase().trim() === username.toLowerCase().trim()) ||
+        (u.fullName && u.fullName.toLowerCase().trim() === username.toLowerCase().trim())
+    );
+
+    if (matchedUser) {
+      if (password.trim() === (matchedUser.password || '').trim()) {
+        const isSuper =
+          matchedUser.isSuperAdmin === true ||
+          matchedUser.role === 'Innovation & Technology Lead' ||
+          matchedUser.username === 'Innovation & Technology Lead';
+        return res.json({
+          success: true,
+          role: matchedUser.role || matchedUser.username,
+          username: matchedUser.username,
+          fullName: matchedUser.fullName,
+          isSuperAdmin: isSuper,
+          canDelete: isSuper,
+        });
+      } else {
+        return res.status(401).json({
+          success: false,
+          error: `Incorrect password for ${username}. Access denied.`,
+        });
+      }
+    }
+  }
+
+  // 2. Fallback to default environment / hardcoded admin credentials
   const expectedPassword = getExpectedAdminPassword(username);
 
   if (!expectedPassword) {
-    return res.status(400).json({ success: false, error: 'Invalid official title specified.' });
+    return res.status(400).json({ success: false, error: 'Invalid official title or user account specified.' });
   }
 
   if (password.trim() === expectedPassword.trim()) {
+    const isSuper = username === 'Innovation & Technology Lead';
     return res.json({
       success: true,
       role: username,
-      canDelete: username === 'Innovation & Technology Lead',
+      username: username,
+      isSuperAdmin: isSuper,
+      canDelete: isSuper,
     });
   } else {
     return res.status(401).json({
